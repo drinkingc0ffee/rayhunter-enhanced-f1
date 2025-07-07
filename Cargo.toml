@@ -1,0 +1,10 @@
+[workspace]
+
+members = [
+    "lib",
+    "bin",
+    "rootshell",
+    "telcom-parser",
+    "installer",
+]
+resolver = "2"

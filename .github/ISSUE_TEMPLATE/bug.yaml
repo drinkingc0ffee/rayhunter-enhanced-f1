@@ -1,0 +1,19 @@
+name: Bug Report
+description: File a bug report.
+labels: ["bug"]
+body:
+  - type: textarea
+    attributes:
+      label: Bug Report Details
+      description: |
+        Please provide the following information, if applicable:
+      placeholder: |
+        • **Rayhunter Version**: (e.g., v0.2.6)
+        • **Capture Date**: (YYYY-MM-DD, e.g., 2025-05-01)
+        • **Capture Location**: (If comfortable disclosing, what region or country were you in? e.g., Washington State)
+        • **Device and Model**: (Device you installed Rayhunter on, e.g., Orbic RC400L)
+        • **What happened?**: (What steps did you take to get to your issue? Tell us what you see!)
+        • **Expected behavior**: (Rayhunter's behavior differed from what I expected because...)
+        • **Relevant log output**: (Rayhunter data captures - QMDL and PCAP logs - or error codes)
+    validations:
+      required: true
