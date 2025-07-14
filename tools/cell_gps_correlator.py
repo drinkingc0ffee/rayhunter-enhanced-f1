@@ -9,6 +9,7 @@ with timestamped GPS coordinates to map cellular network activity to locations.
 import json
 import sys
 import argparse
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 import csv
@@ -151,9 +152,164 @@ class CellGpsCorrelator:
                     
         print(f"Loaded {len(self.cell_observations)} cellular observations from NDJSON")
 
+    def parse_qmdl_with_scat(self, qmdl_file: Path) -> None:
+        """Parse QMDL using SCAT for more reliable cellular info extraction"""
+        print(f"Parsing QMDL with SCAT: {qmdl_file}")
+        
+        import subprocess
+        import tempfile
+        
+        # Create temporary files for SCAT output
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as temp_json:
+            temp_json_path = temp_json.name
+            
+        try:
+            # Run SCAT to parse QMDL
+            scat_cmd = [
+                '/Users/beisenmann/miniconda3/bin/scat',
+                '-t', 'qc',
+                '-d', str(qmdl_file),
+                '--json-file', temp_json_path,
+                '--events',
+                '--msgs'
+            ]
+            
+            print(f"Running SCAT command: {' '.join(scat_cmd)}")
+            result = subprocess.run(scat_cmd, capture_output=True, text=True, timeout=30)
+            
+            if result.returncode != 0:
+                print(f"SCAT error: {result.stderr}")
+                # Fall back to basic parsing
+                self.parse_qmdl_basic(qmdl_file)
+                return
+                
+            # Parse SCAT JSON output
+            with open(temp_json_path, 'r') as f:
+                scat_data = json.load(f)
+                
+            observations_found = 0
+            
+            # Process raw messages from SCAT
+            for msg in scat_data.get('raw_messages', []):
+                try:
+                    # Parse timestamp
+                    timestamp_str = msg.get('timestamp', '')
+                    if timestamp_str:
+                        # Convert ISO timestamp to Unix timestamp
+                        dt = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+                        unix_timestamp = int(dt.timestamp())
+                        
+                        # Create observation
+                        obs = CellObservation(
+                            timestamp=unix_timestamp,
+                            source="scat_qmdl"
+                        )
+                        
+                        # Extract cellular info from hex data
+                        data_hex = msg.get('data', '')
+                        if data_hex:
+                            cellular_info = self.extract_cellular_from_hex(data_hex)
+                            if cellular_info:
+                                obs.cell_id = cellular_info.get('cell_id')
+                                obs.mcc = cellular_info.get('mcc')
+                                obs.mnc = cellular_info.get('mnc')
+                                obs.tac = cellular_info.get('tac')
+                                obs.lac = cellular_info.get('lac')
+                                obs.pci = cellular_info.get('pci')
+                                
+                        self.cell_observations.append(obs)
+                        observations_found += 1
+                        
+                except Exception as e:
+                    print(f"Warning: Could not parse SCAT message: {e}")
+                    continue
+                    
+            print(f"Extracted {observations_found} observations from SCAT QMDL parsing")
+            
+        except subprocess.TimeoutExpired:
+            print("SCAT timeout - falling back to basic parsing")
+            self.parse_qmdl_basic(qmdl_file)
+        except Exception as e:
+            print(f"SCAT parsing failed: {e} - falling back to basic parsing")
+            self.parse_qmdl_basic(qmdl_file)
+        finally:
+            # Cleanup temp file
+            try:
+                Path(temp_json_path).unlink()
+            except:
+                pass
+                
+    def extract_cellular_from_hex(self, data_hex: str) -> Optional[Dict]:
+        """Extract cellular information from hex data"""
+        try:
+            # Look for PLMN patterns
+            plmn_match = re.search(r'130184|1330f1|130013', data_hex, re.IGNORECASE)
+            cellular_info = {}
+            
+            if plmn_match:
+                plmn_hex = plmn_match.group()
+                mcc, mnc = self.decode_plmn(plmn_hex)
+                if mcc and mnc:
+                    cellular_info['mcc'] = mcc
+                    cellular_info['mnc'] = mnc
+                    
+            # Look for cell IDs - convert hex to bytes and search for patterns
+            data_bytes = bytes.fromhex(data_hex)
+            
+            # Search for potential cell IDs (4-byte patterns)
+            for i in range(0, len(data_bytes) - 3):
+                # Try different encodings
+                cell_id_le = struct.unpack('<L', data_bytes[i:i+4])[0]
+                if 1000000 <= cell_id_le <= 9999999:  # Valid cell ID range
+                    cellular_info['cell_id'] = cell_id_le
+                    break
+                    
+            # Search for TAC/LAC values (2-byte patterns)
+            for i in range(0, len(data_bytes) - 1):
+                tac_le = struct.unpack('<H', data_bytes[i:i+2])[0]
+                if 100 <= tac_le <= 65534:  # Valid TAC range
+                    cellular_info['tac'] = tac_le
+                    break
+                    
+            return cellular_info if cellular_info else None
+            
+        except Exception:
+            return None
+            
+    def decode_plmn(self, plmn_hex: str) -> Tuple[Optional[int], Optional[int]]:
+        """Decode PLMN from hex string to MCC/MNC"""
+        try:
+            if len(plmn_hex) != 6:
+                return None, None
+                
+            bytes_data = bytes.fromhex(plmn_hex)
+            
+            # PLMN encoding
+            mcc_digit_1 = bytes_data[0] & 0x0F
+            mcc_digit_2 = (bytes_data[0] & 0xF0) >> 4
+            mcc_digit_3 = (bytes_data[1] & 0xF0) >> 4
+            
+            mnc_digit_1 = bytes_data[2] & 0x0F
+            mnc_digit_2 = (bytes_data[2] & 0xF0) >> 4
+            mnc_digit_3 = bytes_data[1] & 0x0F
+            
+            mcc = mcc_digit_1 * 100 + mcc_digit_2 * 10 + mcc_digit_3
+            
+            if mnc_digit_3 == 0xF:
+                mnc = mnc_digit_1 * 10 + mnc_digit_2
+            else:
+                mnc = mnc_digit_1 * 100 + mnc_digit_2 * 10 + mnc_digit_3
+                
+            if 100 <= mcc <= 999 and 0 <= mnc <= 999:
+                return mcc, mnc
+                
+        except Exception:
+            pass
+        return None, None
+
     def parse_qmdl_basic(self, qmdl_file: Path) -> None:
-        """Basic QMDL parsing to extract timestamps and cellular info"""
-        print(f"Attempting basic QMDL parsing from {qmdl_file}")
+        """Basic QMDL parsing to extract timestamps and cellular info (fallback)"""
+        print(f"Using basic QMDL parsing from {qmdl_file}")
         
         with open(qmdl_file, 'rb') as f:
             data = f.read()
@@ -162,38 +318,25 @@ class CellGpsCorrelator:
         observations_found = 0
         
         while offset < len(data) - 16:
-            # Look for potential diagnostic log message patterns
-            # This is a simplified approach - real QMDL parsing is more complex
-            
             try:
-                # Try to find message header patterns
-                if data[offset:offset+2] == b'\x7E\x00':  # Common QMDL frame start
-                    # Skip frame header, look for timestamp
+                if data[offset:offset+2] == b'\x7E\x00':
                     msg_offset = offset + 4
                     if msg_offset + 12 <= len(data):
-                        # Try to extract timestamp (8 bytes, little endian)
                         timestamp_bytes = data[msg_offset:msg_offset+8]
                         timestamp_low = struct.unpack('<L', timestamp_bytes[0:4])[0]
                         timestamp_high = struct.unpack('<L', timestamp_bytes[4:8])[0]
                         
-                        # Convert to Unix timestamp (simplified)
-                        # QMDL timestamps are complex - this is an approximation
                         full_timestamp = (timestamp_high << 32) | timestamp_low
+                        unix_timestamp = int(full_timestamp / 1000000) + 946684800
                         
-                        # Convert from QMDL time base to Unix (approximate)
-                        # This is a rough conversion and may need adjustment
-                        unix_timestamp = int(full_timestamp / 1000000) + 946684800  # Approximate
-                        
-                        # Only keep reasonable timestamps (after year 2000)
                         if unix_timestamp > 946684800 and unix_timestamp < 2147483647:
                             obs = CellObservation(
                                 timestamp=unix_timestamp,
-                                source="qmdl"
+                                source="qmdl_basic"
                             )
                             self.cell_observations.append(obs)
                             observations_found += 1
                             
-                            # Limit to prevent too many observations
                             if observations_found > 1000:
                                 break
                                 
@@ -202,7 +345,7 @@ class CellGpsCorrelator:
                 
             offset += 1
             
-        print(f"Extracted {observations_found} timestamped observations from QMDL (basic parsing)")
+        print(f"Extracted {observations_found} timestamped observations from basic QMDL parsing")
         
     def find_closest_gps(self, timestamp: int) -> Optional[Tuple[GpsPoint, float]]:
         """Find the closest GPS point to a given timestamp"""
@@ -323,7 +466,7 @@ def main():
         if not qmdl_file.exists():
             print(f"Error: QMDL file {qmdl_file} not found")
             sys.exit(1)
-        correlator.parse_qmdl_basic(qmdl_file)
+        correlator.parse_qmdl_with_scat(qmdl_file)
     
     # Correlate and export
     correlations = correlator.correlate_data()

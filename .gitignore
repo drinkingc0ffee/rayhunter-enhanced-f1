@@ -1,3 +1,92 @@
+# Build and target directories
 /target
 /book
+/tmp
+dist/
+build/
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# Sensitive data files - NEVER commit these to public repo
+*.qmdl
+*.pcapng
+*.ndjson
+*.gps
+*.zip
+*.pcap
+*.sdm
+*.lpd
+
+# Analysis results that may contain sensitive data
+*_analysis.json
+*_analysis.txt
+*_analysis.csv
+*_analysis.md
+*_correlation.csv
+*_correlation.gpx
+*_correlation.kml
+cell_*_details.json
+downgrade_analysis_*.json
+scat_analysis*.json
+scat_cellular_analysis.json
+detailed_cellular_data.json
+comprehensive_cellular_*.csv
+enhanced_correlation.csv
+rayhunter_correlation.*
+FINAL_CELL_*_ANALYSIS.md
+cell_*_complete_report.md
+
+# Personal configuration and secrets
+config.local.json
+config.json
+.env.local
+.env
+*.key
+*.pem
+*.p12
+secrets/
+credentials/
+
+# Temporary and working files
+temp/
+tmp/
+*.tmp
+*~
+.working/
+scratch/
+
+# IDE and editor files
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+.vim/
+
+# Python cache and virtual environments
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Rust specific
+Cargo.lock
+
+# Logs
+*.log
+logs/
+
+# Test files with real data
+test_data/
+sample_data/
+examples/real_*
+
+# Documentation build artifacts
+doc/_build/
