@@ -1,0 +1,8 @@
+cellular_timestamp,cellular_datetime,gps_timestamp,gps_datetime,latitude,longitude,time_diff_seconds,log_code,log_type,raw_data_length
+1579220959,2020-01-17T00:29:19+00:00,,,,,,0x0048,Unknown_0x0048,78
+1579220959,2020-01-17T00:29:19+00:00,,,,,,0x002a,Unknown_0x002a,48
+1579221262,2020-01-17T00:34:22+00:00,,,,,,0x0017,Unknown_0x0017,29
+1579222064,2020-01-17T00:47:44+00:00,,,,,,0x0029,Unknown_0x0029,47
+1579248554,2020-01-17T08:09:14+00:00,,,,,,0x0026,Unknown_0x0026,45
+1579249036,2020-01-17T08:17:16+00:00,,,,,,0x0048,Unknown_0x0048,79
+1579249539,2020-01-17T08:25:39+00:00,,,,,,0x002a,Unknown_0x002a,48

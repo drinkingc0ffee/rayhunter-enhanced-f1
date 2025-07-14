@@ -3,9 +3,15 @@
 ## 📚 Complete Documentation Library
 
 ### Core Documentation
-- **[README_ENHANCED.md](README_ENHANCED.md)** - Main project overview and features
+- **[README_ENHANCED.md](README_ENHANCED.md)** - Main project overview and enhanced features
+- **[BUILD_GUIDE.md](BUILD_GUIDE.md)** - Comprehensive build instructions with cross-compilation fixes
 - **[CHANGELOG_ENHANCED.md](CHANGELOG_ENHANCED.md)** - Version history and changes
 - **[OFFLINE_ANALYSIS.md](OFFLINE_ANALYSIS.md)** - Offline cellular data analysis workflow
+
+### Setup & Environment Documentation
+- **[DOCKER_BUILD_GUIDE.md](DOCKER_BUILD_GUIDE.md)** - Complete Docker environment guide (3-step process)
+- **[UBUNTU_SETUP.md](UBUNTU_SETUP.md)** - Ubuntu-specific automated setup guide
+- **[test_cross_compilation.sh](test_cross_compilation.sh)** - Cross-compilation environment verification script
 
 ### API Documentation
 - **[GPS_API_DOCUMENTATION.md](GPS_API_DOCUMENTATION.md)** - Complete GPS REST API reference
@@ -29,15 +35,35 @@
 
 ### Quick References
 
-#### 🚀 Quick Start
-1. **[Installation Guide](doc/installation.md)** - Get up and running
-2. **[Enhanced Features](README_ENHANCED.md#-key-enhancements)** - What's new in this fork
-3. **[GPS API Setup](GPS_API_DOCUMENTATION.md#integration-examples)** - Location tracking integration
+#### 🚀 Quick Start Options
 
-#### 🔧 Configuration
-- **[Basic Config](doc/configuration.md)** - Standard settings
-- **[Enhanced Features Config](README_ENHANCED.md#csv-export-with-enhanced-data)** - New capabilities
-- **[Device-Specific Setup](doc/supported-devices.md)** - Per-device instructions
+**Docker Environment (Recommended for New Users):**
+```bash
+./docker.sh up && ./docker.sh shell
+./setup_ubuntu_ci.sh && ./fetch_source.sh && ./build_and_deploy.sh
+```
+
+**Ubuntu Automated Setup:**
+```bash
+./setup_ubuntu_ci.sh && ./build_all.sh && ./deploy.sh
+```
+
+**Local Dependencies (No Root Required):**
+```bash
+./setup_local_deps.sh && ./build_all.sh && ./deploy.sh
+```
+
+#### 🔧 Build & Development
+- **[BUILD_GUIDE.md](BUILD_GUIDE.md)** - Complete build instructions with cross-compilation fixes
+- **[Docker Environment](DOCKER_BUILD_GUIDE.md)** - Isolated build environment
+- **[Cross-Compilation Testing](test_cross_compilation.sh)** - Verify build environment
+- **[Local Dependencies Setup](setup_local_deps.sh)** - No-root-required setup
+
+#### 🐛 Troubleshooting
+- **Cross-Compilation Issues**: Run `./test_cross_compilation.sh` to diagnose
+- **Environment Problems**: Use Docker environment or `./setup_local_deps.sh`
+- **Build Failures**: Clean with `./clean.sh` then rebuild with `./build_all.sh`
+- **Device Issues**: Check `adb devices` and USB debugging settings
 
 #### 📡 API References
 - **[REST Endpoints](GPS_API_DOCUMENTATION.md#api-endpoint)** - GPS coordinate submission
@@ -50,14 +76,10 @@
 - **[Privacy Considerations](GPS_API_DOCUMENTATION.md#security-considerations)** - Data protection
 
 ### Development & Contributing
-- **[Building from Source](README_ENHANCED.md#-installation)** - Development setup
-- **[Enhanced Codebase](CHANGELOG_ENHANCED.md)** - Technical changes and improvements
+- **[Enhanced Build System](BUILD_GUIDE.md#-build-scripts)** - Modern build scripts with cross-compilation fixes
+- **[Environment Setup Scripts](BUILD_GUIDE.md#environment-setup-scripts)** - Automated dependency installation
+- **[Docker Development](DOCKER_BUILD_GUIDE.md)** - Container-based development workflow
 - **[Contributing Guidelines](README_ENHANCED.md#-contributing)** - How to contribute
-
-### Troubleshooting
-- **[FAQ](doc/faq.md)** - Frequently asked questions
-- **[GPS API Troubleshooting](GPS_API_DOCUMENTATION.md#troubleshooting)** - API-specific issues
-- **[Device Issues](doc/supported-devices.md)** - Device-specific problems
 
 ---
 
@@ -65,8 +87,11 @@
 
 | Topic | Document | Description |
 |-------|----------|-------------|
-| **Getting Started** | [README_ENHANCED.md](README_ENHANCED.md) | Project overview and key features |
-| **Installation** | [doc/installation.md](doc/installation.md) | Step-by-step setup guide |
+| **Getting Started** | [README_ENHANCED.md](README_ENHANCED.md) | Project overview and installation options |
+| **Docker Environment** | [DOCKER_BUILD_GUIDE.md](DOCKER_BUILD_GUIDE.md) | Simple 3-step Docker build process |
+| **Build Instructions** | [BUILD_GUIDE.md](BUILD_GUIDE.md) | Comprehensive build guide with cross-compilation fixes |
+| **Ubuntu Setup** | [UBUNTU_SETUP.md](UBUNTU_SETUP.md) | Automated Ubuntu environment setup |
+| **Cross-Compilation Test** | [test_cross_compilation.sh](test_cross_compilation.sh) | Verify build environment is working |
 | **GPS Integration** | [GPS_API_DOCUMENTATION.md](GPS_API_DOCUMENTATION.md) | Complete GPS API reference |
 | **Device Setup** | [doc/supported-devices.md](doc/supported-devices.md) | Device-specific instructions |
 | **Configuration** | [doc/configuration.md](doc/configuration.md) | Advanced configuration options |
@@ -77,7 +102,43 @@
 
 ---
 
-## 🔄 Recent Additions
+## 🛠️ Enhanced Build System
+
+### Key Improvements (Latest Version)
+- ✅ **Cross-Compilation Fixes** - Proper host/target separation eliminates ARM linker errors
+- ✅ **Docker Environment** - Complete isolated build environment with persistent storage  
+- ✅ **Environment Auto-Detection** - Automatically finds and uses local or system dependencies
+- ✅ **Build Verification** - Tests cross-compilation setup before building
+- ✅ **Multiple Setup Options** - Docker, Ubuntu automated, local deps, or manual
+
+### Available Scripts
+- **`./docker.sh`** - Docker environment management (build, up, shell, down, clean)
+- **`./build_all.sh`** - Main build script with cross-compilation fixes and environment detection
+- **`./make.sh`** - Quick build script for iterative development
+- **`./clean.sh`** - Enhanced cleanup script with npm cache cleaning
+- **`./deploy.sh`** - Device deployment via adb
+- **`./test_cross_compilation.sh`** - **NEW**: Verify cross-compilation environment
+- **`./setup_ubuntu_ci.sh`** - Automated Ubuntu setup for CI/CD
+- **`./setup_ubuntu_build_env.sh`** - Interactive Ubuntu setup for development
+- **`./setup_local_deps.sh`** - Local dependency installation (no root required)
+- **`./fetch_source.sh`** - Download latest source code (Docker environment)
+
+### Environment Options
+1. **Docker** (Recommended): `./docker.sh up && ./docker.sh shell`
+2. **Ubuntu System**: `./setup_ubuntu_ci.sh` (requires sudo)
+3. **Local Dependencies**: `./setup_local_deps.sh` (no root required)
+4. **Manual**: See [BUILD_GUIDE.md](BUILD_GUIDE.md) for custom setup
+
+---
+
+## 🔄 Recent Major Enhancements
+
+### Build System Overhaul (Latest)
+- **FIXED**: Cross-compilation ARM linker errors (`/usr/arm-linux-gnueabihf/bin/ld: unrecognised emulation mode: elf_x86_64`)
+- **NEW**: Docker environment with 3-step build process
+- **NEW**: Cross-compilation verification script (`test_cross_compilation.sh`)
+- **ENHANCED**: All build scripts with proper host/target separation
+- **IMPROVED**: Environment detection and automatic setup
 
 ### GPS REST API (v0.4.0-enhanced)
 - **NEW**: External GPS coordinate submission via REST API
@@ -90,6 +151,26 @@
 - **NEW**: Advanced cellular parameter extraction (MCC, MNC, LAC, TAC, Cell ID)
 - **NEW**: Multi-RAT support (2G/3G/4G/5G)
 - **NEW**: Offline analysis workflow for OpenCellID integration
+
+---
+
+## 🐛 Common Issues & Solutions
+
+### Cross-Compilation Errors
+**Issue**: `unrecognised emulation mode: elf_x86_64`
+**Solution**: Run `./test_cross_compilation.sh` to verify environment, then `./clean.sh && ./build_all.sh`
+
+### Missing Dependencies
+**Issue**: `cargo: command not found` or missing tools
+**Solution**: Use Docker (`./docker.sh shell`) or local setup (`./setup_local_deps.sh`)
+
+### Build Failures
+**Issue**: Compilation or linking errors
+**Solution**: Clean environment (`./clean.sh`) and verify setup (`./test_cross_compilation.sh`)
+
+### Device Connection
+**Issue**: Device not accessible via adb
+**Solution**: Check `adb devices`, enable USB debugging, authorize connection
 
 ---
 

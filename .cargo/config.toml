@@ -6,12 +6,20 @@ rustflags = ["-C", "target-feature=+crt-static"]
 linker = "rust-lld"
 rustflags = ["-C", "target-feature=+crt-static"]
 
-# apt install build-essential libc6-armhf-cross libc6-dev-armhf-cross gcc-arm-linux-gnueabihf
+# ARM cross-compilation targets
 [target.armv7-unknown-linux-gnueabihf]
 linker = "arm-linux-gnueabihf-gcc"
 rustflags = ["-C", "target-feature=+crt-static"]
 
 [target.armv7-unknown-linux-musleabihf]
+linker = "arm-linux-gnueabihf-gcc"
+rustflags = ["-C", "target-feature=+crt-static"]
+
+# Host targets (ensure build scripts compile for host)
+[target.x86_64-unknown-linux-gnu]
+linker = "gcc"
+
+[target.x86_64-unknown-linux-musl]
 linker = "rust-lld"
 rustflags = ["-C", "target-feature=+crt-static"]
 
@@ -20,10 +28,6 @@ rustflags = ["-C", "target-feature=+crt-static"]
 # [target.x86_64-apple-darwin]
 # linker = "rust-lld"
 # rustflags = ["-C", "target-feature=+crt-static"]
-
-[target.x86_64-unknown-linux-musl]
-linker = "rust-lld"
-rustflags = ["-C", "target-feature=+crt-static"]
 
 [profile.release]
 # keep line numbers in stack traces for non-firmware binaries

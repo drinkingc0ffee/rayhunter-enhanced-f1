@@ -1,0 +1,78 @@
+name: Test Ubuntu Setup Scripts
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'setup_ubuntu_*.sh'
+      - '.github/workflows/test-ubuntu-setup.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'setup_ubuntu_*.sh'
+      - '.github/workflows/test-ubuntu-setup.yml'
+
+jobs:
+  test-ubuntu-setup:
+    name: Test Ubuntu Setup Scripts
+    strategy:
+      matrix:
+        ubuntu-version: [20.04, 22.04, 24.04]
+    runs-on: ubuntu-${{ matrix.ubuntu-version }}
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Test CI setup script
+      run: |
+        # Make script executable
+        chmod +x setup_ubuntu_ci.sh
+        
+        # Run the CI setup script without adb (not needed for CI)
+        INSTALL_ADB=false ./setup_ubuntu_ci.sh
+        
+    - name: Verify installation
+      run: |
+        # Source the environment
+        source /tmp/rust-env.sh
+        
+        # Verify tools are installed and working
+        echo "Checking tool versions..."
+        rustc --version
+        cargo --version
+        node --version
+        npm --version
+        gcc --version
+        arm-linux-gnueabihf-gcc --version
+        
+        # Check ARM targets
+        echo "Checking ARM targets..."
+        rustup target list --installed | grep armv7
+        
+    - name: Test web build
+      run: |
+        source /tmp/rust-env.sh
+        cd bin/web
+        npm install
+        npm run build
+        
+    - name: Test Rust compilation
+      run: |
+        source /tmp/rust-env.sh
+        
+        # Test library compilation for ARM
+        cargo check --target armv7-unknown-linux-musleabihf -p rayhunter
+        
+        # Test that we can compile basic ARM binary (without firmware profile dependencies)
+        NO_FIRMWARE_BIN=true cargo check --target armv7-unknown-linux-musleabihf -p rayhunter-daemon
+        
+    - name: Test formatting and linting
+      run: |
+        source /tmp/rust-env.sh
+        
+        # Test code formatting
+        cargo fmt --all --check
+        
+        # Test clippy (with NO_FIRMWARE_BIN to avoid installer dependency issues)
+        NO_FIRMWARE_BIN=true cargo clippy --target armv7-unknown-linux-musleabihf -p rayhunter -- -D warnings 

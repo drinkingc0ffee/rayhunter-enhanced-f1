@@ -34,7 +34,7 @@
 </script>
 
 <div class="p-4 xl:px-8 bg-rayhunter-blue drop-shadow flex flex-row justify-between items-center">
-    <img src="/rayhunter_text.png" class="h-10 xl:h-12"/>
+    <img src="/rayhunter_text.png" alt="Rayhunter" class="h-10 xl:h-12"/>
     <div class="flex flex-row gap-4">
         <a class="flex flex-row gap-1 group" href="https://github.com/EFForg/rayhunter/issues" target="_blank">
             <span class="hidden text-white group-hover:text-gray-400 lg:flex">Report Issue</span>
@@ -79,7 +79,7 @@
     <ConfigForm />
 {:else}
     <div class="flex flex-col justify-center items-center">
-        <img src="/rayhunter_orca_only.png" class="h-48 animate-spin"/>
+        <img src="/rayhunter_orca_only.png" alt="Loading..." class="h-48 animate-spin"/>
         <p class="text-xl">Loading...</p>
     </div>
 {/if}
