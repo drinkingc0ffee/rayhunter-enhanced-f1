@@ -3,6 +3,7 @@ mod config;
 mod diag;
 mod display;
 mod dummy_analyzer;
+mod enhanced_analysis;
 mod error;
 mod gps;
 mod gps_correlation;

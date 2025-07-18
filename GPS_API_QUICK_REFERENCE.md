@@ -39,16 +39,17 @@ curl -X GET "http://192.168.1.1:8080/api/v1/gps/37.7749,-122.4194"
 ```
 
 ## 💾 Data Storage
-- **CSV**: `/data/rayhunter/gps-data/gps_coordinates.csv`
-- **JSON**: `/data/rayhunter/gps-data/gps_coordinates.json`
+- **Per-Scan GPS**: `/data/rayhunter/captures/{scan_id}.gps`
+- **Legacy CSV**: `/data/rayhunter/gps-data/gps_coordinates.csv` (deprecated)
+- **Legacy JSON**: `/data/rayhunter/gps-data/gps_coordinates.json` (deprecated)
 
 ## 🔍 Check Data
 ```bash
 # View stored coordinates
-adb shell 'rootshell -c "cat /data/rayhunter/gps-data/gps_coordinates.csv"'
+adb shell 'rootshell -c "ls -la /data/rayhunter/captures/*.gps"'
 
 # Check latest entries
-adb shell 'rootshell -c "tail -5 /data/rayhunter/gps-data/gps_coordinates.csv"'
+adb shell 'rootshell -c "tail -5 /data/rayhunter/captures/$(ls -t /data/rayhunter/captures/*.gps | head -1)"'
 ```
 
 ## 🐍 Python Example

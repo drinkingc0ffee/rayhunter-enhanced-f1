@@ -189,9 +189,10 @@ submit_gps_location "192.168.1.1" "37.7749" "-122.4194"
 GPS coordinates are automatically saved to the device in two formats:
 
 ### File Locations
-- **Base Directory:** `/data/rayhunter/gps-data/`
-- **CSV File:** `/data/rayhunter/gps-data/gps_coordinates.csv`
-- **JSON File:** `/data/rayhunter/gps-data/gps_coordinates.json`
+- **Base Directory:** `/data/rayhunter/captures/`
+- **Per-Scan GPS Files:** `/data/rayhunter/captures/{scan_id}.gps`
+- **Legacy CSV File:** `/data/rayhunter/gps-data/gps_coordinates.csv` (deprecated)
+- **Legacy JSON File:** `/data/rayhunter/gps-data/gps_coordinates.json` (deprecated)
 
 ### CSV Format
 ```csv
@@ -333,7 +334,7 @@ The GPS data can be correlated with cellular capture data for enhanced analysis:
    - Check that port 8080 is accessible
 
 2. **Permission Denied**
-   - The `/data/rayhunter/gps-data/` directory will be created automatically
+   - The `/data/rayhunter/captures/` directory will be created automatically
    - Ensure sufficient disk space is available
 
 3. **Invalid Coordinates**

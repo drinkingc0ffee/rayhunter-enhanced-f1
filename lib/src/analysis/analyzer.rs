@@ -118,6 +118,7 @@ pub struct ReportMetadata {
 pub struct PacketAnalysis {
     pub timestamp: DateTime<FixedOffset>,
     pub events: Vec<Option<Event>>,
+    pub gps_correlation: Option<super::gps_correlation::GpsCorrelation>,
 }
 
 #[derive(Serialize, Debug)]
@@ -214,6 +215,7 @@ impl Harness {
                 row.analysis.push(PacketAnalysis {
                     timestamp: chrono::Local::now().fixed_offset(),
                     events: qmdl_analysis_result,
+                    gps_correlation: None, // Will be filled by GPS correlator
                 });
             }
 
@@ -243,6 +245,7 @@ impl Harness {
                 row.analysis.push(PacketAnalysis {
                     timestamp: timestamp.to_datetime(),
                     events: analysis_result,
+                    gps_correlation: None, // Will be filled by GPS correlator
                 });
             }
         }

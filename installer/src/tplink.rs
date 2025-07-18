@@ -151,10 +151,10 @@ async fn tplink_run_install(
     )
     .await?;
 
-    // Create GPS data directory
+    // Create captures directory for all log files
     telnet_send_command(
         addr,
-        &format!("mkdir -p {sdcard_path}/gps-data"),
+        &format!("mkdir -p {sdcard_path}/captures"),
         "exit code 0",
     )
     .await?;

@@ -23,7 +23,7 @@ echo "✅ Daemon stopped\n"
 
 # Create directories
 echo "📁 Creating directories on device..."
-adb shell '/bin/rootshell -c "mkdir -p /data/rayhunter/gps-data"'
+adb shell '/bin/rootshell -c "mkdir -p /data/rayhunter/captures"'
 adb shell '/bin/rootshell -c "mkdir -p /data/rayhunter/web"'
 echo "✅ Directories created\n"
 

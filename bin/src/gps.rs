@@ -60,7 +60,7 @@ impl GpsWriter {
     /// Write GPS coordinate to the scan's GPS file
     pub async fn write_coordinate(&mut self, coord: &GpsCoordinate) -> Result<(), std::io::Error> {
         let gps_line = format!("{}, {}, {}\n", 
-                              coord.timestamp.timestamp(),
+                              coord.timestamp.format("%Y-%m-%d %H:%M:%S%.3f UTC"),
                               coord.latitude, 
                               coord.longitude);
         self.file.write_all(gps_line.as_bytes()).await?;
@@ -75,121 +75,7 @@ impl GpsWriter {
     }
 }
 
-/// GPS data storage manager (legacy - for backwards compatibility)
-#[allow(dead_code)]
-pub struct GpsDataStore {
-    base_path: PathBuf,
-}
-
-#[allow(dead_code)]
-impl GpsDataStore {
-    pub fn new(base_path: &str) -> Self {
-        Self {
-            base_path: PathBuf::from(base_path).join("gps-data"),
-        }
-    }
-
-    /// Ensure the GPS data directory exists
-    pub async fn ensure_directory(&self) -> Result<(), std::io::Error> {
-        create_dir_all(&self.base_path).await
-    }
-
-    /// Save GPS coordinate to CSV file
-    pub async fn save_to_csv(&self, coord: &GpsCoordinate) -> Result<(), std::io::Error> {
-        let csv_path = self.base_path.join("gps_coordinates.csv");
-        
-        // Check if file exists to determine if we need to write headers
-        let file_exists = csv_path.exists();
-        
-        let mut file = OpenOptions::new()
-            .create(true)
-            .append(true)
-            .open(&csv_path)
-            .await?;
-
-        // Write CSV header if file is new
-        if !file_exists {
-            file.write_all(b"timestamp,latitude,longitude\n").await?;
-        }
-
-        // Write the coordinate data
-        let csv_line = format!("{},{},{}\n", 
-                              coord.timestamp.format("%Y-%m-%d %H:%M:%S%.3f UTC"),
-                              coord.latitude, 
-                              coord.longitude);
-        file.write_all(csv_line.as_bytes()).await?;
-        file.flush().await?;
-
-        Ok(())
-    }
-
-    /// Save GPS coordinate to JSON file (append to JSON array)
-    pub async fn save_to_json(&self, coord: &GpsCoordinate) -> Result<(), std::io::Error> {
-        let json_path = self.base_path.join("gps_coordinates.json");
-        
-        // Read existing data or create new array
-        let mut coordinates = if json_path.exists() {
-            let content = tokio::fs::read_to_string(&json_path).await?;
-            if content.trim().is_empty() {
-                Vec::new()
-            } else {
-                serde_json::from_str::<Vec<GpsCoordinate>>(&content)
-                    .unwrap_or_else(|_| Vec::new())
-            }
-        } else {
-            Vec::new()
-        };
-
-        // Add new coordinate
-        coordinates.push(coord.clone());
-
-        // Write back to file
-        let json_content = serde_json::to_string_pretty(&coordinates)
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
-        
-        tokio::fs::write(&json_path, json_content).await?;
-
-        Ok(())
-    }
-
-    /// Save GPS coordinate to both CSV and JSON
-    pub async fn save_coordinate(&self, coord: &GpsCoordinate) -> Result<(), std::io::Error> {
-        self.ensure_directory().await?;
-        
-        // Save to both formats
-        self.save_to_csv(coord).await?;
-        self.save_to_json(coord).await?;
-
-        // Save to GPS request log in the specified format: <timestamp>, <latitude>, <longitude>
-        self.save_to_request_log(coord).await?;
-
-        info!("GPS coordinate saved: lat={}, lon={}, timestamp={}", 
-              coord.latitude, coord.longitude, coord.timestamp);
-
-        Ok(())
-    }
-
-    /// Save GPS request to dedicated log file in format: <timestamp>, <latitude>, <longitude>
-    pub async fn save_to_request_log(&self, coord: &GpsCoordinate) -> Result<(), std::io::Error> {
-        let log_path = self.base_path.join("gps_requests.log");
-        
-        let mut file = OpenOptions::new()
-            .create(true)
-            .append(true)
-            .open(&log_path)
-            .await?;
-
-        // Write in the requested format: <timestamp>, <latitude>, <longitude>
-        let log_line = format!("{}, {}, {}\n", 
-                              coord.timestamp.format("%Y-%m-%d %H:%M:%S%.3f UTC"),
-                              coord.latitude, 
-                              coord.longitude);
-        file.write_all(log_line.as_bytes()).await?;
-        file.flush().await?;
-
-        Ok(())
-    }
-}
+// Legacy GPS data storage has been removed - all GPS data now uses per-scan files with UNIX timestamps
 
 /// Parse latitude and longitude from path parameter
 fn parse_coordinates(lat_lon: &str) -> Result<(f64, f64), String> {

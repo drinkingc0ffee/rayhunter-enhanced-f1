@@ -82,88 +82,21 @@ impl GpsCorrelator {
         Ok(entries)
     }
 
-    /// Load all GPS entries from CSV and JSON files (legacy method for backwards compatibility)
-    async fn load_all_gps_entries(&self) -> Result<Vec<GpsEntry>> {
-        let mut all_entries = Vec::new();
+    // Legacy CSV and JSON loading methods removed - all GPS data now uses per-scan files with UNIX timestamps
 
-        // Try to load from CSV first
-        if let Ok(csv_entries) = self.load_gps_from_csv().await {
-            all_entries.extend(csv_entries);
-        }
-
-        // Also try to load from JSON if available
-        if let Ok(json_entries) = self.load_gps_from_json().await {
-            all_entries.extend(json_entries);
-        }
-
-        // Sort by timestamp to ensure chronological order
-        all_entries.sort_by(|a, b| a.timestamp.cmp(&b.timestamp));
-        
-        // Remove duplicates (same timestamp, lat, lon)
-        all_entries.dedup_by(|a, b| {
-            a.timestamp == b.timestamp && 
-            (a.latitude - b.latitude).abs() < f64::EPSILON &&
-            (a.longitude - b.longitude).abs() < f64::EPSILON
-        });
-
-        Ok(all_entries)
-    }
-
-    /// Load GPS entries from CSV file
-    async fn load_gps_from_csv(&self) -> Result<Vec<GpsEntry>> {
-        let csv_path = self.gps_data_path.join("gps_coordinates.csv");
-        if !csv_path.exists() {
-            return Ok(Vec::new());
-        }
-
-        let content = fs::read_to_string(&csv_path).await
-            .context("Failed to read GPS CSV file")?;
-
-        let mut entries = Vec::new();
-        for line in content.lines().skip(1) { // Skip header
-            if let Some(entry) = self.parse_csv_line(line) {
-                entries.push(entry);
-            }
-        }
-
-        Ok(entries)
-    }
-
-    /// Load GPS entries from JSON file
-    async fn load_gps_from_json(&self) -> Result<Vec<GpsEntry>> {
-        let json_path = self.gps_data_path.join("gps_coordinates.json");
-        if !json_path.exists() {
-            return Ok(Vec::new());
-        }
-
-        let content = fs::read_to_string(&json_path).await
-            .context("Failed to read GPS JSON file")?;
-
-        let entries: Vec<GpsEntry> = serde_json::from_str(&content)
-            .context("Failed to parse GPS JSON file")?;
-
-        Ok(entries)
-    }
-
-    /// Parse a GPS file line into a GpsEntry (format: "unix_timestamp, latitude, longitude")
+    /// Parse a GPS file line into a GpsEntry (format: "formatted_timestamp, latitude, longitude")
     fn parse_gps_line(&self, line: &str) -> Option<GpsEntry> {
         let parts: Vec<&str> = line.split(',').collect();
         if parts.len() != 3 {
             return None;
         }
 
-        // Parse Unix timestamp (seconds since epoch)
+        // Parse formatted timestamp
         let timestamp_str = parts[0].trim();
-        let timestamp = if let Ok(unix_timestamp) = timestamp_str.parse::<i64>() {
-            // Convert Unix timestamp to DateTime<Local>
-            DateTime::from_timestamp(unix_timestamp, 0)?.with_timezone(&Local)
-        } else {
-            // Fallback: try to parse old format for backwards compatibility
-            chrono::DateTime::parse_from_str(timestamp_str, "%Y-%m-%d %H:%M:%S%.3f UTC")
-                .or_else(|_| chrono::DateTime::parse_from_rfc3339(timestamp_str))
-                .ok()?
-                .with_timezone(&Local)
-        };
+        let timestamp = chrono::DateTime::parse_from_str(timestamp_str, "%Y-%m-%d %H:%M:%S%.3f UTC")
+            .or_else(|_| chrono::DateTime::parse_from_rfc3339(timestamp_str))
+            .ok()?
+            .with_timezone(&Local);
         
         let latitude: f64 = parts[1].trim().parse().ok()?;
         let longitude: f64 = parts[2].trim().parse().ok()?;
@@ -175,23 +108,7 @@ impl GpsCorrelator {
         })
     }
 
-    /// Parse a single CSV line into a GpsEntry
-    fn parse_csv_line(&self, line: &str) -> Option<GpsEntry> {
-        let parts: Vec<&str> = line.split(',').collect();
-        if parts.len() != 3 {
-            return None;
-        }
-
-        let timestamp = DateTime::parse_from_rfc3339(parts[0].trim()).ok()?.with_timezone(&Local);
-        let latitude: f64 = parts[1].trim().parse().ok()?;
-        let longitude: f64 = parts[2].trim().parse().ok()?;
-
-        Some(GpsEntry {
-            timestamp,
-            latitude,
-            longitude,
-        })
-    }
+    // CSV line parsing method removed - all GPS data now uses UNIX timestamps
 
     /// Filter GPS entries by timeframe with some tolerance
     fn filter_gps_by_timeframe(
@@ -233,7 +150,7 @@ impl GpsCorrelator {
         for entry in &correlation.gps_entries {
             content.push_str(&format!(
                 "{},{},{}\n",
-                entry.timestamp.to_rfc3339(),
+                entry.timestamp.format("%Y-%m-%d %H:%M:%S%.3f UTC"),
                 entry.latitude,
                 entry.longitude
             ));

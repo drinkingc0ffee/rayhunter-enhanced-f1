@@ -1199,9 +1199,9 @@ checksum = "fc0fef456e4baa96da950455cd02c081ca953b141298e41db3fc7e36b1da849c"
 
 [[package]]
 name = "homedir"
-version = "0.3.6"
+version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "68df315d2857b2d8d2898be54a85e1d001bbbe0dbb5f8ef847b48dd3a23c4527"
+checksum = "b8c5f196574c4116f643489730d89a7a8ebea7047ac67244b8dc778e1fa5bd88"
 dependencies = [
  "cfg-if",
  "nix 0.30.1",

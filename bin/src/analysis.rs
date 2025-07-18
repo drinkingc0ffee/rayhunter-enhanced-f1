@@ -21,11 +21,14 @@ use tokio_util::task::TaskTracker;
 use crate::dummy_analyzer::TestAnalyzer;
 use crate::qmdl_store::RecordingStore;
 use crate::server::ServerState;
+use crate::gps_correlation::GpsCorrelator;
 
 pub struct AnalysisWriter {
     writer: BufWriter<File>,
     harness: Harness,
     bytes_written: usize,
+    gps_correlator: Option<GpsCorrelator>,
+    recording_name: Option<String>,
 }
 
 // We write our analysis results to a file immediately to minimize the amount of
@@ -49,6 +52,8 @@ impl AnalysisWriter {
             writer: BufWriter::new(file),
             bytes_written: 0,
             harness,
+            gps_correlator: None,
+            recording_name: None,
         };
         let metadata = result.harness.get_metadata();
         result.write(&metadata).await?;

@@ -104,8 +104,9 @@ timestamp,latitude,longitude
 4. **Sorting**: GPS entries are sorted chronologically and deduplicated
 
 ### Data Sources
-- **Primary**: `/data/rayhunter/gps-data/gps_coordinates.csv`
-- **Secondary**: `/data/rayhunter/gps-data/gps_coordinates.json`
+- **Primary**: `/data/rayhunter/captures/{scan_id}.gps`
+- **Secondary**: `/data/rayhunter/gps-data/gps_coordinates.csv` (legacy)
+- **Tertiary**: `/data/rayhunter/gps-data/gps_coordinates.json` (legacy)
 - **Fallback**: Empty result if no GPS data exists (expected behavior)
 
 ## Usage Examples
@@ -179,7 +180,7 @@ gpsData.gps_entries.forEach(entry => {
 ### Directory Structure
 ```
 /data/rayhunter/
-├── gps-data/
+├── captures/
 │   ├── gps_coordinates.csv
 │   ├── gps_coordinates.json
 │   └── gps_logs.txt
@@ -207,7 +208,7 @@ gpsData.gps_entries.forEach(entry => {
 ## Troubleshooting
 
 ### No GPS Downloads Available
-- Verify GPS data directory exists: `/data/rayhunter/gps-data/`
+- Verify GPS data directory exists: `/data/rayhunter/captures/`
 - Check if GPS coordinates have been uploaded via API
 - Ensure recording times overlap with GPS timestamps
 
