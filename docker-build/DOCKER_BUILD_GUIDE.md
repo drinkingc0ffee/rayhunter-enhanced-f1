@@ -1,6 +1,6 @@
 # 🐳 Rayhunter Enhanced - Simple 3-Step Docker Build
 
-This guide provides a **simple, modular approach** to building rayhunter-enhanced using Docker as a persistent build environment.
+This guide provides a **simple, modular approach** to building rayhunter-enhanced using Docker as a persistent build environment with GPS integration and USB device access.
 
 ## 🎯 **Simple 3-Step Process**
 
@@ -14,6 +14,7 @@ This guide provides a **simple, modular approach** to building rayhunter-enhance
 - Installs Android SDK and adb
 - Installs ARM cross-compilation tools
 - Sets up build environment variables
+- Configures GPS API endpoints
 
 ### **Step 2: Download Source Code** 📥
 ```bash
@@ -36,13 +37,14 @@ This guide provides a **simple, modular approach** to building rayhunter-enhance
 - Creates web interface assets
 - Deploys to connected device via adb over USB
 - Verifies deployment
+- Includes GPS API endpoints and correlation features
 
 ## 🚀 **Quick Start**
 
 ### **1. Start Docker Environment**
 ```bash
-./docker.sh up
-./docker.sh shell
+./docker-build.sh up
+./docker-build.sh shell
 ```
 
 ### **2. Run All Steps**
@@ -61,6 +63,72 @@ This guide provides a **simple, modular approach** to building rayhunter-enhance
 
 # Step 3: Build and deploy
 ./build_and_deploy.sh
+```
+
+## 📱 **GPS Integration Features**
+
+### **GPS API Endpoints**
+The enhanced version includes comprehensive GPS integration:
+
+- ✅ **Real-time GPS coordinate submission** via REST API
+- ✅ **Mobile app compatibility** (GPS2REST-Android)
+- ✅ **Multiple export formats** (CSV, JSON, GPX)
+- ✅ **Per-scan GPS files** with automatic timestamp correlation
+- ✅ **External GPS device support** via API endpoints
+
+### **GPS API Usage**
+```bash
+# Submit GPS coordinates (GET method - GPS2REST-Android compatible)
+curl "http://192.168.1.1:8080/api/v1/gps/37.7749,-122.4194"
+
+# Submit GPS coordinates (POST method)
+curl -X POST "http://192.168.1.1:8080/api/v1/gps/37.7749,-122.4194"
+
+# Download GPS data for a recording session
+curl "http://192.168.1.1:8080/api/gps/1720080123/csv" -o gps_data.csv
+```
+
+### **GPS Data Integration**
+- **Automatic correlation** with cellular captures
+- **Location-based analysis** for cell tower mapping
+- **Journey tracking** with GPS waypoints
+- **Export capabilities** for external analysis tools
+
+## 🔧 **USB Device Access**
+
+### **Enhanced USB Support**
+The Docker environment includes full USB device access:
+
+```bash
+# Start container with USB access
+./docker-build.sh up
+
+# If USB devices not accessible, restart with enhanced access
+./restart_container_with_usb.sh
+
+# Check USB device permissions
+lsusb
+# Should show your device
+
+# Verify adb connection from container
+adb devices
+# Should show device as "device"
+```
+
+### **USB Troubleshooting**
+If Docker container can't access USB devices:
+
+```bash
+# Restart container with enhanced USB access
+./restart_container_with_usb.sh
+
+# Check USB device permissions
+lsusb
+# Should show your device
+
+# Verify adb connection from container
+adb devices
+# Should show device as "device"
 ```
 
 ## 🐛 **Cross-Compilation Fix (If Needed)**
@@ -213,17 +281,21 @@ chmod +x fix_cross_compilation.sh
 - **rayhunter user** with password `thehunted` and sudo access
 - **All toolchains** installed locally in user space
 - **Persistent storage** for source code and build artifacts
+- **Full USB device access** for direct deployment
+- **GPS integration** with REST API endpoints
 
 ### **Build Process**
 - **ARM cross-compilation** for target devices
 - **Web interface** built with SvelteKit
 - **Direct deployment** via adb over USB
 - **Clean, repeatable** builds
+- **GPS correlation** features included
 
 ### **Target Architecture**
 - **armv7-unknown-linux-musleabihf** (ARM hard float)
 - **Optimized firmware profile** for embedded devices
 - **Web interface** accessible at device IP port 8080
+- **GPS API** accessible at device IP port 8080
 
 ## 🔧 **Configuration Options**
 
@@ -236,6 +308,10 @@ export CLEAN_BUILD=true          # Clean before build
 # Source configuration  
 export REPO_URL=https://github.com/your-fork/rayhunter-enhanced.git
 export BRANCH=develop            # or any branch/tag
+
+# GPS configuration
+export GPS_API_ENABLED=true      # Enable GPS API endpoints
+export GPS_CORRELATION=true      # Enable GPS correlation with captures
 ```
 
 ### **Device Deployment**
@@ -248,6 +324,9 @@ cd /data/rayhunter
 
 # Web interface available at:
 # http://device-ip:8080
+
+# GPS API available at:
+# http://device-ip:8080/api/v1/gps/
 ```
 
 ## 🐛 **Troubleshooting**
@@ -306,6 +385,29 @@ adb start-server
 # Authorize computer connection
 ```
 
+### **Docker USB Access Issues**
+```bash
+# Restart container with enhanced USB access
+./restart_container_with_usb.sh
+
+# Check USB device permissions
+lsusb
+# Should show your device
+
+# Verify adb connection from container
+adb devices
+# Should show device as "device"
+```
+
+### **GPS API Issues**
+```bash
+# Check API endpoint
+curl "http://192.168.1.1:8080/api/v1/gps/37.7749,-122.4194"
+
+# Check device logs for GPS correlation errors
+adb shell su -c "tail -f /data/rayhunter/rayhunter.log"
+```
+
 ## 📁 **Project Structure**
 
 ```
@@ -318,7 +420,8 @@ adb start-server
     ├── build_deps/                 # Local dependencies (if using setup_local_deps.sh)
     ├── target/                     # Build artifacts
     ├── bin/                        # Main binaries
-    └── lib/                        # Libraries
+    ├── lib/                        # Libraries
+    └── tmp-deploy/gps/             # GPS data (during deployment)
 ```
 
 ## 🎯 **Benefits of This Approach**
@@ -332,6 +435,8 @@ adb start-server
 ✅ **Fully Automated**: No manual environment loading required  
 ✅ **Error-proof**: Eliminates "cargo: command not found" issues  
 ✅ **Cross-compilation fixed**: Handles ARM/host compiler separation properly
+✅ **USB device access**: Full access to connected devices
+✅ **GPS integration**: Comprehensive GPS API and correlation features
 
 ## 🔄 **Development Workflow**
 
@@ -342,6 +447,14 @@ adb start-server
 
 The persistent Docker environment means you only need to set up the toolchains once, then you can quickly fetch updates and rebuild as needed!
 
+## 📱 **GPS Integration Workflow**
+
+1. **Deploy**: Build and deploy with GPS API endpoints
+2. **Submit Coordinates**: Use mobile app or curl to submit GPS coordinates
+3. **Capture Data**: Record cellular captures with GPS correlation
+4. **Export**: Download GPS data in CSV, JSON, or GPX format
+5. **Analyze**: Use GPS data for location-based analysis
+
 ---
 
-**🎉 Ready to build rayhunter-enhanced with the simplest possible workflow!** 
+**🎉 Ready to build rayhunter-enhanced with the simplest possible workflow and comprehensive GPS integration!** 

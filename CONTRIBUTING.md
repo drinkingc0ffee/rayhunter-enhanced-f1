@@ -15,35 +15,63 @@ Thank you for your interest in contributing to Rayhunter Enhanced! This project 
 - Methods for **illegal interception** of communications
 - **Offensive capabilities** without clear defensive purpose
 - Code that **violates privacy** or telecommunications laws
+- **GPS tracking tools** for unauthorized location monitoring
 
 ## 🚀 Getting Started
 
 ### Development Environment Setup
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/[your-org]/rayhunter-enhanced.git
-   cd rayhunter-enhanced
-   ```
+#### Option 1: Docker Environment (Recommended)
+```bash
+# Clone the repository
+git clone https://github.com/[your-org]/rayhunter-enhanced.git
+cd rayhunter-enhanced
 
-2. **Install dependencies**
-   ```bash
-   # Rust (latest stable)
-   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-   
-   # Python dependencies
-   pip3 install -r requirements.txt
-   
-   # Optional: SCAT for advanced analysis
-   # See: https://github.com/fgsect/scat
-   ```
+# Start Docker environment
+./docker-build.sh up
+./docker-build.sh shell
 
-3. **Build and test**
-   ```bash
-   cargo build --release
-   cargo test
-   python3 -m pytest tools/tests/
-   ```
+# Inside container - setup environment
+./setup_ubuntu_ci.sh
+./fetch_source.sh
+```
+
+#### Option 2: Local Development
+```bash
+# Clone the repository
+git clone https://github.com/[your-org]/rayhunter-enhanced.git
+cd rayhunter-enhanced
+
+# Install dependencies
+./setup_local_deps.sh  # No root required
+# OR
+./setup_ubuntu_ci.sh   # System-wide (requires sudo)
+```
+
+#### Option 3: Manual Setup
+```bash
+# Rust (latest stable)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# ARM cross-compilation target
+rustup target add armv7-unknown-linux-musleabihf
+
+# Python dependencies
+pip3 install -r requirements.txt
+```
+
+### Build and Test
+```bash
+# Test cross-compilation environment
+./test_cross_compilation.sh
+
+# Build everything
+./build_all.sh
+
+# Run tests
+cargo test
+python3 -m pytest tools/tests/
+```
 
 ## 📋 Contribution Guidelines
 
@@ -54,24 +82,31 @@ Thank you for your interest in contributing to Rayhunter Enhanced! This project 
 - Improved cellular protocol analysis
 - Enhanced forensic capabilities
 - Documentation of attack patterns
+- GPS correlation analysis improvements
 
 #### 🛠️ **Tool Improvements**
 - Performance optimizations
 - New export formats
 - Better error handling
 - Cross-platform compatibility
+- Docker environment enhancements
+- GPS API improvements
 
 #### 📖 **Documentation**
 - Usage examples with sanitized data
 - Technical analysis guides
 - Legal compliance documentation
 - Installation and setup improvements
+- GPS integration guides
+- Docker environment documentation
 
 #### 🧪 **Testing**
 - Unit tests for analysis functions
 - Integration tests with sample data
 - Validation of detection accuracy
 - Performance benchmarks
+- GPS API testing
+- Cross-compilation verification
 
 ### Contribution Process
 
@@ -89,18 +124,21 @@ Thank you for your interest in contributing to Rayhunter Enhanced! This project 
 - **Python code**: Follow PEP 8 style guidelines
 - **Documentation**: Include inline comments and README updates
 - **Tests**: Add appropriate test coverage
+- **Cross-compilation**: Test ARM builds
 
 #### Security Review
 - **No sensitive data** in commits or tests
 - **Input validation** for all user-provided data
 - **Error handling** for malformed inputs
 - **Memory safety** considerations
+- **GPS data validation** for location information
 
 #### Legal Compliance
 - **Defensive purpose** clearly documented
 - **No illegal capabilities** included
 - **Proper attribution** for external code
 - **License compatibility** verified
+- **Privacy compliance** for GPS features
 
 ## 🔧 Development Standards
 
@@ -116,6 +154,19 @@ fn analyze_cellular_downgrade_patterns(qmdl_data: &[u8]) -> Result<AttackPattern
     // Documented algorithms
     let patterns = extract_rrc_patterns(qmdl_data)?;
     Ok(analyze_patterns(patterns))
+}
+
+// GPS correlation function example
+fn correlate_gps_cellular_data(
+    gps_points: &[GpsPoint], 
+    cell_observations: &[CellObservation],
+    time_threshold: Duration
+) -> Result<Vec<CorrelatedObservation>, Error> {
+    validate_gps_data(gps_points)?;
+    validate_cellular_data(cell_observations)?;
+    
+    let correlations = find_correlations(gps_points, cell_observations, time_threshold)?;
+    Ok(correlations)
 }
 ```
 
@@ -143,11 +194,14 @@ def correlate_gps_cellular_data(gps_points: List[GpsPoint],
 - **Test all analysis functions** with known inputs/outputs
 - **Edge cases**: Empty data, malformed inputs, extreme values
 - **Performance tests**: Large file handling, memory usage
+- **GPS validation**: Coordinate range and format testing
 
 #### Integration Tests
 - **End-to-end workflows** with sanitized sample data
 - **Tool interoperability** (SCAT integration, export formats)
 - **Cross-platform compatibility** testing
+- **Docker environment** testing
+- **GPS API** integration testing
 
 ### Documentation Standards
 
@@ -162,6 +216,7 @@ def correlate_gps_cellular_data(gps_points: List[GpsPoint],
 - **Update GPS_API_DOCUMENTATION.md** for new APIs
 - **Include security considerations** for each function
 - **Provide usage examples** with sanitized data
+- **Document Docker environment** setup and usage
 
 ## 📊 Sample Data Guidelines
 
@@ -170,6 +225,7 @@ def correlate_gps_cellular_data(gps_points: List[GpsPoint],
 - **Generate synthetic data** that mimics real patterns
 - **Sanitize existing data** by removing identifiable information
 - **Document data sources** and sanitization methods
+- **Use fake GPS coordinates** for testing (e.g., 0.0, 0.0 or test ranges)
 
 ### Example Test Data Structure
 ```python
@@ -179,6 +235,14 @@ test_cell_observation = CellObservation(
     cell_id=123456,        # Fake cell ID
     mcc=001,              # Test MCC
     mnc=01,               # Test MNC
+    source="test_data"
+)
+
+# Good: Synthetic GPS data
+test_gps_point = GpsPoint(
+    timestamp=1642694400,  # Fixed timestamp
+    latitude=0.0,         # Test coordinates
+    longitude=0.0,        # Test coordinates
     source="test_data"
 )
 
@@ -198,6 +262,7 @@ real_observation = CellObservation(
 - **Boundary checking** for array access
 - **Memory management** to prevent leaks
 - **Sanitized output** options
+- **GPS coordinate validation** (range and format)
 
 ### Error Handling
 ```rust
@@ -211,8 +276,54 @@ match parse_qmdl_message(data) {
     Err(e) => return Err(e),
 }
 
+// Good: GPS validation
+match validate_gps_coordinates(lat, lon) {
+    Ok(coords) => save_gps_data(coords),
+    Err(GpsError::InvalidLatitude) => {
+        log::warn!("Invalid latitude: {}", lat);
+        return Err(GpsError::InvalidLatitude);
+    },
+    Err(e) => return Err(e),
+}
+
 // Bad: Panicking on errors
 let message = parse_qmdl_message(data).unwrap(); // Could panic!
+```
+
+### GPS Data Security
+- **Validate all GPS coordinates** before processing
+- **Sanitize location data** before export
+- **Use synthetic coordinates** for testing
+- **Implement rate limiting** for GPS API endpoints
+- **Log GPS data access** for security auditing
+
+## 🐳 Docker Development
+
+### Docker Environment Features
+- **Isolated build environment** with Ubuntu 22.04
+- **Persistent storage** for development work
+- **USB device access** for testing
+- **Pre-configured toolchains** for ARM cross-compilation
+- **Consistent development environment** across contributors
+
+### Docker Development Workflow
+```bash
+# Start development environment
+./docker-build.sh up
+./docker-build.sh shell
+
+# Setup environment (first time only)
+./setup_ubuntu_ci.sh
+
+# Get latest source
+./fetch_source.sh
+
+# Build and test
+./build_all.sh
+cargo test
+
+# Deploy to device for testing
+./deploy.sh
 ```
 
 ## 🏆 Recognition
@@ -228,6 +339,8 @@ Outstanding contributors will be recognized in:
 - **Tool Development**: Major feature implementations
 - **Documentation**: Comprehensive guides and examples
 - **Community**: Helping other contributors and users
+- **GPS Integration**: Location-based analysis improvements
+- **Docker Environment**: Build system enhancements
 
 ## 📞 Getting Help
 
@@ -240,6 +353,7 @@ Outstanding contributors will be recognized in:
 - **New contributors welcome**: We'll help you get started
 - **Code reviews**: Learn best practices through feedback
 - **Pair programming**: Available for complex features
+- **Docker environment support**: Help with containerized development
 
 ## 📄 Legal and Licensing
 
@@ -255,6 +369,8 @@ By contributing, you agree that:
 - **Respect telecommunications laws**
 - **Follow responsible disclosure practices**
 - **Maintain ethical research standards**
+- **Comply with GPS data protection regulations**
+- **Respect privacy laws** for location data
 
 ---
 

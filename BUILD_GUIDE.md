@@ -1,14 +1,14 @@
 # 🏗️ Build Guide - Rayhunter Enhanced
 
-This guide covers how to build and deploy the rayhunter-enhanced project with comprehensive cross-compilation support and multiple setup options.
+This guide covers how to build and deploy the rayhunter-enhanced project with comprehensive cross-compilation support, Docker environment, GPS integration, and multiple setup options.
 
 ## 🚀 Quick Start
 
 ### Option 1: Docker Environment (Recommended for New Users)
 ```bash
 # Start Docker environment
-./docker.sh up
-./docker.sh shell
+./docker-build.sh up
+./docker-build.sh shell
 
 # Inside container - simple 3-step process
 ./setup_ubuntu_ci.sh
@@ -61,10 +61,10 @@ The Docker environment provides a complete, isolated build environment with all 
 ### Getting Started with Docker
 ```bash
 # Build and start container
-./docker.sh up
+./docker-build.sh up
 
 # Open shell in container  
-./docker.sh shell
+./docker-build.sh shell
 
 # Inside container - run the automated 3-step build
 ./setup_ubuntu_ci.sh && ./fetch_source.sh && ./build_and_deploy.sh
@@ -72,13 +72,13 @@ The Docker environment provides a complete, isolated build environment with all 
 
 ### Docker Commands
 ```bash
-./docker.sh build     # Build the Docker image
-./docker.sh up        # Start container
-./docker.sh down      # Stop container
-./docker.sh shell     # Open shell in running container
-./docker.sh status    # Show container status
-./docker.sh clean     # Remove container and image
-./docker.sh rebuild   # Clean and rebuild everything
+./docker-build.sh build     # Build the Docker image
+./docker-build.sh up        # Start container
+./docker-build.sh down      # Stop container
+./docker-build.sh shell     # Open shell in running container
+./docker-build.sh status    # Show container status
+./docker-build.sh clean     # Remove container and image
+./docker-build.sh rebuild   # Clean and rebuild everything
 ```
 
 ### Docker Benefits
@@ -87,8 +87,9 @@ The Docker environment provides a complete, isolated build environment with all 
 - ✅ **Persistent storage** - Work survives container restarts
 - ✅ **Cross-compilation ready** - ARM toolchain pre-configured
 - ✅ **adb support** - Direct device deployment via USB
+- ✅ **USB device access** - Full access to connected devices
 
-See `DOCKER_BUILD_GUIDE.md` for complete Docker documentation.
+See `docker-build/DOCKER_BUILD_GUIDE.md` for complete Docker documentation.
 
 ## 📋 Prerequisites
 
@@ -105,8 +106,8 @@ See `DOCKER_BUILD_GUIDE.md` for complete Docker documentation.
 
 ```bash
 # Start Docker environment
-./docker.sh up
-./docker.sh shell
+./docker-build.sh up
+./docker-build.sh shell
 
 # Inside container, everything is ready to use
 ```
@@ -157,6 +158,7 @@ The build system has been enhanced with comprehensive cross-compilation fixes:
 - ✅ **PATH management** - Ensures correct compiler resolution
 - ✅ **Environment isolation** - Prevents ARM compiler from interfering with build scripts  
 - ✅ **Automatic verification** - Tests cross-compilation setup before building
+- ✅ **Docker support** - Complete isolated build environment
 
 ### Test Cross-Compilation Setup
 ```bash
@@ -232,6 +234,7 @@ Comprehensive build script that:
 - ✅ **Builds Rust library** 
 - ✅ **Builds all ARM firmware binaries**
 - ✅ **Handles dependencies** in correct order
+- ✅ **GPS integration support** - Includes GPS correlation features
 
 ### `./make.sh` (Quick Build)
 Streamlined build script that:
@@ -256,6 +259,7 @@ Deployment script that:
 - ✅ **Deploys binaries and web interface**
 - ✅ **Reboots device**
 - ✅ **Starts daemon service**
+- ✅ **GPS API endpoints** - Deploys GPS correlation features
 
 ### `./test_cross_compilation.sh` (NEW - Verification)
 Test script that verifies:
@@ -265,6 +269,35 @@ Test script that verifies:
 - ✅ **Correct compiler resolution** (cc → gcc, not ARM)
 - ✅ **Build script compilation** for host architecture
 - ✅ **ARM cross-compilation** functionality
+
+## 📱 GPS Integration
+
+### GPS API Features
+The enhanced version includes comprehensive GPS integration:
+
+- ✅ **Real-time GPS coordinate submission** via REST API
+- ✅ **Mobile app compatibility** (GPS2REST-Android)
+- ✅ **Multiple export formats** (CSV, JSON, GPX)
+- ✅ **Per-scan GPS files** with automatic timestamp correlation
+- ✅ **External GPS device support** via API endpoints
+
+### GPS API Usage
+```bash
+# Submit GPS coordinates (GET method - GPS2REST-Android compatible)
+curl "http://192.168.1.1:8080/api/v1/gps/37.7749,-122.4194"
+
+# Submit GPS coordinates (POST method)
+curl -X POST "http://192.168.1.1:8080/api/v1/gps/37.7749,-122.4194"
+
+# Download GPS data for a recording session
+curl "http://192.168.1.1:8080/api/gps/1720080123/csv" -o gps_data.csv
+```
+
+### GPS Data Integration
+- **Automatic correlation** with cellular captures
+- **Location-based analysis** for cell tower mapping
+- **Journey tracking** with GPS waypoints
+- **Export capabilities** for external analysis tools
 
 ## 🔧 Manual Build Process
 
@@ -302,6 +335,7 @@ cargo build --profile firmware --target armv7-unknown-linux-musleabihf -p instal
 
 - **ARM Binaries**: `target/armv7-unknown-linux-musleabihf/firmware/`
 - **Web Interface**: `bin/web/build/`
+- **GPS Data**: `tmp-deploy/gps/` (during deployment)
 
 ## 🎯 Build Profiles
 
@@ -336,7 +370,7 @@ cargo build --profile firmware --target armv7-unknown-linux-musleabihf -p instal
 **Solution**: 
 ```bash
 # For Docker environment
-./docker.sh shell
+./docker-build.sh shell
 # Everything is pre-installed
 
 # For local setup
@@ -421,6 +455,24 @@ source ~/.rayhunter_build_env  # If using Ubuntu setup
 source ./build_deps/setup-env.sh  # If using local deps
 ```
 
+### Docker Environment Issues
+
+**Problem**: Docker container can't access USB devices
+
+**Solutions**:
+```bash
+# Restart container with enhanced USB access
+./restart_container_with_usb.sh
+
+# Check USB device permissions
+lsusb
+# Should show your device
+
+# Verify adb connection from container
+adb devices
+# Should show device as "device"
+```
+
 ### Advanced Troubleshooting
 
 #### Clean Everything
@@ -462,12 +514,14 @@ file target/armv7-unknown-linux-musleabihf/firmware/rayhunter-daemon
 - **bin/web/package.json**: Updated dependencies for security fixes  
 - **Build Order**: Web → Library → Firmware → Installer
 - **Profiles**: Use `firmware` profile for device binaries
+- **GPS Integration**: Includes GPS correlation and API endpoints
 
 ### Build Environment
 - **Environment Detection**: Local deps → System → Manual fallback
 - **Cross-Compilation**: Automatic host/target separation
 - **Verification**: Pre-build environment testing
 - **Error Prevention**: Eliminates common cross-compilation issues
+- **Docker Support**: Complete isolated environment with USB access
 
 ## 🔄 CI/CD
 
@@ -476,12 +530,14 @@ The GitHub Actions workflows are configured correctly and will:
 - Build firmware binaries  
 - Run tests
 - Create release packages
+- Include GPS integration features
 
 For local development, use the scripts in this guide.
 
 ## 📚 Related Documentation
 
-- **[DOCKER_BUILD_GUIDE.md](DOCKER_BUILD_GUIDE.md)** - Complete Docker environment guide
+- **[docker-build/DOCKER_BUILD_GUIDE.md](docker-build/DOCKER_BUILD_GUIDE.md)** - Complete Docker environment guide
 - **[UBUNTU_SETUP.md](UBUNTU_SETUP.md)** - Ubuntu-specific setup instructions
 - **[README_ENHANCED.md](README_ENHANCED.md)** - Project overview and features
+- **[GPS_API_DOCUMENTATION.md](GPS_API_DOCUMENTATION.md)** - Complete GPS API reference
 - **[DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md)** - Complete documentation index 

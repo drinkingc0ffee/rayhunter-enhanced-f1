@@ -1,23 +1,92 @@
-# Build and target directories
-/target
-/book
-/tmp
-dist/
-build/
+# =============================================================================
+# Rayhunter Enhanced - Git Ignore File
+# =============================================================================
+# This file excludes build artifacts, caches, logs, and temporary files
+# from version control to keep the repository clean for publication.
 
-# OS files
-.DS_Store
-Thumbs.db
+# =============================================================================
+# BUILD ARTIFACTS AND TARGET DIRECTORIES
+# =============================================================================
 
-# Sensitive data files - NEVER commit these to public repo
+# Rust build artifacts
+/target/
+**/target/
+*.rlib
+*.rmeta
+*.so
+*.dll
+*.dylib
+*.exe
+*.pdb
+
+# Cargo registry and cache
+.cargo/
+**/.cargo/
+Cargo.lock
+**/Cargo.lock
+
+# Rustup toolchains
+.rustup/
+**/.rustup/
+
+# =============================================================================
+# WEB BUILD ARTIFACTS
+# =============================================================================
+
+# Node.js and npm
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn-integrity
+
+# Web build outputs
+bin/web/build/
+bin/web/dist/
+bin/web/.svelte-kit/
+bin/web/package-lock.json
+bin/web/yarn.lock
+
+# =============================================================================
+# DEPLOYMENT AND TEMPORARY FILES
+# =============================================================================
+
+# Deployment artifacts
+tmp-deploy/
+**/tmp-deploy/
+deploy/
+**/deploy/
+
+# Local build dependencies
+build_deps/
+**/build_deps/
+.local_deps/
+**/.local_deps/
+
+# =============================================================================
+# SENSITIVE DATA FILES - NEVER COMMIT THESE
+# =============================================================================
+
+# Cellular capture files
 *.qmdl
 *.pcapng
 *.ndjson
-*.gps
-*.zip
 *.pcap
 *.sdm
 *.lpd
+
+# GPS data files
+*.gps
+*.gpx
+*.kml
+
+# Archive files
+*.zip
+*.tar.gz
+*.rar
+*.7z
 
 # Analysis results that may contain sensitive data
 *_analysis.json
@@ -38,6 +107,10 @@ rayhunter_correlation.*
 FINAL_CELL_*_ANALYSIS.md
 cell_*_complete_report.md
 
+# =============================================================================
+# CONFIGURATION AND SECRETS
+# =============================================================================
+
 # Personal configuration and secrets
 config.local.json
 config.json
@@ -46,47 +119,294 @@ config.json
 *.key
 *.pem
 *.p12
+*.crt
+*.csr
 secrets/
 credentials/
+.rayhunter_build_env
+**/.rayhunter_build_env
 
-# Temporary and working files
+# =============================================================================
+# TEMPORARY AND WORKING FILES
+# =============================================================================
+
+# Temporary directories
 temp/
 tmp/
+**/temp/
+**/tmp/
 *.tmp
 *~
 .working/
 scratch/
+**/scratch/
 
-# IDE and editor files
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+
+# =============================================================================
+# IDE AND EDITOR FILES
+# =============================================================================
+
+# VSCode
 .vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+.vscode/extensions.json
+
+# IntelliJ IDEA
 .idea/
+*.iml
+*.ipr
+*.iws
+
+# Vim
 *.swp
 *.swo
 .vim/
+.vimrc
 
-# Python cache and virtual environments
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# =============================================================================
+# PYTHON CACHE AND VIRTUAL ENVIRONMENTS
+# =============================================================================
+
+# Python cache
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 .Python
+*.py[cod]
+*$py.class
+
+# Virtual environments
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
+.venv/
+.python-version
 
-# Rust specific
-Cargo.lock
+# Python package management
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.pytest_cache/
 
-# Logs
+# =============================================================================
+# LOG FILES
+# =============================================================================
+
+# Application logs
 *.log
 logs/
+**/logs/
+rayhunter.log
+**/rayhunter.log
 
-# Test files with real data
+# System logs
+*.syslog
+*.out
+*.err
+
+# =============================================================================
+# TEST FILES WITH REAL DATA
+# =============================================================================
+
+# Test data directories
 test_data/
 sample_data/
 examples/real_*
+**/test_data/
+**/sample_data/
 
-# Documentation build artifacts
+# =============================================================================
+# DOCUMENTATION BUILD ARTIFACTS
+# =============================================================================
+
+# Documentation builds
 doc/_build/
+docs/_build/
+_book/
+site/
+
+# =============================================================================
+# DOCKER AND CONTAINER FILES
+# =============================================================================
+
+# Docker build artifacts
+.dockerignore
+docker-compose.override.yml
+docker-compose.prod.yml
+
+# Container volumes
+docker-volumes/
+**/docker-volumes/
+
+# =============================================================================
+# OPERATING SYSTEM FILES
+# =============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.tmp
+*.temp
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# =============================================================================
+# COMPILER AND TOOL SPECIFIC
+# =============================================================================
+
+# ARM cross-compilation artifacts
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+*.obj
+*.elf
+*.bin
+*.hex
+
+# GCC
+*.gcno
+*.gcda
+*.gcov
+
+# Clang
+*.clang-tidy
+*.clang-format
+
+# =============================================================================
+# GIT SPECIFIC
+# =============================================================================
+
+# Git hooks (if not part of the project)
+.git/hooks/
+.git/objects/
+.git/refs/
+
+# =============================================================================
+# MISCELLANEOUS
+# =============================================================================
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Lock files (except package managers)
+*.lock
+!package-lock.json
+!yarn.lock
+!pnpm-lock.yaml
+
+# =============================================================================
+# PROJECT SPECIFIC EXCLUSIONS
+# =============================================================================
+
+# Rayhunter specific
+rayhunter.log
+rayhunter.pid
+*.pid
+*.state
+
+# GPS correlation files
+gps_correlation_*.csv
+gps_correlation_*.json
+gps_correlation_*.gpx
+
+# Cellular analysis outputs
+cellular_analysis_*.csv
+cellular_analysis_*.json
+cellular_analysis_*.md
+
+# Device-specific files
+device_config_*.json
+device_state_*.json
+
+# =============================================================================
+# DEVELOPMENT ENVIRONMENT
+# =============================================================================
+
+# Local development files
+.local/
+**/.local/
+dev/
+**/dev/
+
+# Environment files
+.env.local
+.env.development
+.env.test
+.env.production
+
+# =============================================================================
+# END OF GITIGNORE
+# =============================================================================

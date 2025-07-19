@@ -4,6 +4,36 @@
 
 ### 🚀 Major Enhancements
 
+#### GPS Integration System
+- **NEW** GPS REST API for external coordinate submission
+- **ADDED** Real-time GPS coordinate correlation with cellular captures
+- **ENHANCED** Mobile app compatibility (GPS2REST-Android)
+- **ADDED** Multiple export formats (CSV, JSON, GPX)
+- **NEW** Per-scan GPS files with automatic timestamp correlation
+- **ADDED** External GPS device support via API endpoints
+
+#### GPS API Features
+- **Endpoint**: `GET|POST /api/v1/gps/{latitude},{longitude}`
+- **GPS2REST-Android Compatibility**: GET requests for mobile app integration
+- **Automatic Timestamp Recording**: Server-side timestamp generation
+- **Data Validation**: Coordinate range and format validation
+- **Dual Storage**: CSV and JSON formats for flexibility
+
+#### Docker Environment Support
+- **NEW** Complete isolated build environment with Ubuntu 22.04
+- **ADDED** Persistent storage that survives container restarts
+- **ENHANCED** Full USB device access for direct deployment
+- **ADDED** Pre-configured ARM cross-compilation toolchain
+- **NEW** adb support for device communication
+- **ADDED** 3-step automated build process
+
+#### Enhanced Build System
+- **FIXED** Cross-compilation ARM linker errors
+- **NEW** Cross-compilation verification script (`test_cross_compilation.sh`)
+- **ENHANCED** All build scripts with proper host/target separation
+- **ADDED** Environment detection and automatic setup
+- **NEW** Multiple setup options (Docker, Ubuntu automated, local deps, manual)
+
 #### Cellular Data Extraction (3x Coverage Expansion)
 - **ADDED** 22 new log codes for comprehensive cellular monitoring
 - **EXPANDED** from 11 to 33 total log codes (300% increase)
@@ -74,36 +104,70 @@ pub struct CellularNetworkInfo {
 - **ADDED** CSV dependency for data export
 - **ENHANCED** Cross-compilation for ARM targets
 - **IMPROVED** Web UI integration
+- **NEW** Docker environment with persistent storage
+- **ADDED** USB device access in Docker containers
+- **ENHANCED** Environment detection and automatic setup
 
 #### Code Quality
 - **FIXED** Unused variable warnings
 - **RESOLVED** Move semantics issues
 - **IMPROVED** Error handling and logging
+- **FIXED** Cross-compilation ARM linker errors
+- **ADDED** GPS API error handling and validation
 
 #### Dependencies
 - **ADDED** `csv = "1.3"` for enhanced data export
 - **UPDATED** Existing dependencies for compatibility
+- **ADDED** GPS correlation and API dependencies
 
 ### 📊 Performance Improvements
 - **3x increase** in cellular data capture coverage
 - **Enhanced** real-time processing capabilities
 - **Optimized** memory usage for continuous monitoring
+- **IMPROVED** GPS data correlation performance
+- **ENHANCED** Docker build environment efficiency
 
 ### 🛡️ Security Enhancements
 - **IMPROVED** IMSI catcher detection algorithms
 - **ENHANCED** Neighbor cell analysis
 - **ADDED** Signal anomaly detection
+- **NEW** GPS data validation and sanitization
+- **ENHANCED** API endpoint security
 
 ### 📚 Documentation
 - **CREATED** `README_ENHANCED.md` with comprehensive usage guide
 - **ADDED** Installation instructions for enhanced features
 - **DOCUMENTED** All new cellular parameters and extraction methods
 - **ADDED** Device-specific installation guides
+- **NEW** Docker build guide with 3-step process
+- **ADDED** GPS API documentation and examples
+- **ENHANCED** Build system documentation with cross-compilation fixes
+- **UPDATED** All markdown files with current information
 
 ### 🧪 Testing
 - **VERIFIED** Compilation on ARM targets
 - **TESTED** Enhanced log code coverage
 - **VALIDATED** Cellular parameter extraction
+- **TESTED** GPS API functionality and integration
+- **VERIFIED** Docker environment and USB access
+- **VALIDATED** Cross-compilation fixes
+
+### 🐳 Docker Environment Features
+- **Ubuntu 22.04** container with persistent home directory
+- **rayhunter user** with password `thehunted` and sudo access
+- **All toolchains** installed locally in user space
+- **Persistent storage** for source code and build artifacts
+- **Full USB device access** for direct deployment
+- **GPS integration** with REST API endpoints
+
+### 📱 GPS Integration Features
+- **Real-time GPS coordinate submission** via REST API
+- **Mobile app compatibility** (GPS2REST-Android)
+- **Multiple export formats** (CSV, JSON, GPX)
+- **Per-scan GPS files** with automatic timestamp correlation
+- **External GPS device support** via API endpoints
+- **Automatic correlation** with cellular captures
+- **Location-based analysis** for cell tower mapping
 
 ---
 
@@ -121,6 +185,8 @@ pub struct CellularNetworkInfo {
 2. **ARM cross-compilation target required**: `armv7-unknown-linux-musleabihf`
 3. **Device-specific rooting may be required**
 4. **Enhanced features require re-installation of daemon**
+5. **Docker environment recommended for new users**
+6. **GPS API endpoints automatically deployed with firmware**
 
 ## Breaking Changes
 - None - fully backward compatible with original Rayhunter v0.4.0
@@ -130,6 +196,26 @@ Users of original Rayhunter can upgrade seamlessly:
 1. Build enhanced firmware using provided instructions
 2. Install using existing installation methods
 3. Enjoy 3x expanded cellular data coverage automatically
+4. Access GPS API endpoints for location correlation
+5. Use Docker environment for simplified builds
+
+## Quick Start Options
+
+### Docker Environment (Recommended for New Users)
+```bash
+./docker-build.sh up && ./docker-build.sh shell
+./setup_ubuntu_ci.sh && ./fetch_source.sh && ./build_and_deploy.sh
+```
+
+### Ubuntu Automated Setup
+```bash
+./setup_ubuntu_ci.sh && ./build_all.sh && ./deploy.sh
+```
+
+### Local Dependencies (No Root Required)
+```bash
+./setup_local_deps.sh && ./build_all.sh && ./deploy.sh
+```
 
 ---
 
