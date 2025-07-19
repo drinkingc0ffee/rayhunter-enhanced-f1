@@ -95,6 +95,7 @@ build_deps/
 # Exclude analysis markdown files but allow legitimate documentation
 *_analysis.md
 !README_*_ANALYSIS.md
+!DOWNGRADE_ATTACK_ANALYSIS.md
 *_correlation.csv
 *_correlation.gpx
 *_correlation.kml
