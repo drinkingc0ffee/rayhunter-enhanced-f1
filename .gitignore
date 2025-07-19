@@ -92,7 +92,9 @@ build_deps/
 *_analysis.json
 *_analysis.txt
 *_analysis.csv
+# Exclude analysis markdown files but allow legitimate documentation
 *_analysis.md
+!README_*_ANALYSIS.md
 *_correlation.csv
 *_correlation.gpx
 *_correlation.kml
