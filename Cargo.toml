@@ -1,10 +1,12 @@
 [workspace]
-
 members = [
+    "check",
+    "daemon",
+    "installer",
     "lib",
-    "bin",
     "rootshell",
     "telcom-parser",
-    "installer",
 ]
-resolver = "2"
+
+[workspace.dependencies]
+rayhunter = { path = "./lib" }
