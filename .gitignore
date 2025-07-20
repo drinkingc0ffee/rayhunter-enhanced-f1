@@ -8,6 +8,10 @@
 # BUILD ARTIFACTS AND TARGET DIRECTORIES
 # =============================================================================
 
+daemon/web/build/
+daemon/web/dist/
+daemon/web/.svelte-kit/
+
 # Rust build artifacts
 /target/
 **/target/
