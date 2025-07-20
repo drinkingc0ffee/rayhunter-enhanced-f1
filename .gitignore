@@ -198,6 +198,17 @@ __pycache__/
 # Virtual environments
 env/
 venv/
+
+# =============================================================================
+# DOCKER BUILD ARTIFACTS
+# =============================================================================
+
+# Docker build outputs
+docker-build/rayhunter-daemon-enhanced-arm
+docker-build/rayhunter-daemon-enhanced-arm-fixed
+docker-build/rootshell-arm
+docker-build/rootshell-arm-enhanced
+docker-build/web-enhanced/
 ENV/
 env.bak/
 venv.bak/
