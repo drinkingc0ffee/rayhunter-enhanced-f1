@@ -1,153 +1,19 @@
-name: 🐛 Bug Report
-description: Report a bug in Rayhunter Enhanced
-labels: ["bug", "needs-triage"]
+name: Bug Report
+description: File a bug report.
+labels: ["bug"]
 body:
-  - type: markdown
-    attributes:
-      value: |
-        ## 🛡️ Security Notice
-        **Do NOT include sensitive data** in bug reports:
-        - No real QMDL files or cellular captures
-        - No personal location information
-        - No device identifiers or network details
-        
-        Use sanitized/synthetic data for examples.
-
   - type: textarea
-    id: bug-description
     attributes:
-      label: 🔍 Bug Description
-      description: A clear description of what the bug is
-      placeholder: Describe the bug clearly and concisely
-    validations:
-      required: true
-
-  - type: textarea
-    id: system-info
-    attributes:
-      label: 🖥️ System Information
-      description: Please provide system details
+      label: Bug Report Details
+      description: |
+        Please provide the following information, if applicable:
       placeholder: |
-        • **Rayhunter Version**: (e.g., v0.4.1)
-        • **Operating System**: (e.g., Ubuntu 22.04, macOS 13.0, Windows 11)
-        • **Architecture**: (e.g., x86_64, ARM64)
-        • **Python Version**: (e.g., 3.9.11)
-        • **Rust Version**: (e.g., 1.70.0)
+        • **Rayhunter Version**: (e.g., v0.2.6)
+        • **Capture Date**: (YYYY-MM-DD, e.g., 2025-05-01)
+        • **Capture Location**: (If comfortable disclosing, what region or country were you in? e.g., Washington State)
+        • **Device and Model**: (Device you installed Rayhunter on, e.g., Orbic RC400L)
+        • **What happened?**: (What steps did you take to get to your issue? Tell us what you see!)
+        • **Expected behavior**: (Rayhunter's behavior differed from what I expected because...)
+        • **Relevant log output**: (Rayhunter data captures - QMDL and PCAP logs - or error codes)
     validations:
       required: true
-
-  - type: textarea
-    id: device-info
-    attributes:
-      label: 📱 Device Information
-      description: Information about the cellular device (if applicable)
-      placeholder: |
-        • **Device Model**: (e.g., Orbic RC400L, TP-Link M7310)
-        • **Firmware Version**: (if known)
-        • **Connection Type**: (USB, AT commands, etc.)
-        • **Region**: (General region, e.g., "North America", "Europe")
-    validations:
-      required: false
-
-  - type: textarea
-    id: steps-to-reproduce
-    attributes:
-      label: 🔄 Steps to Reproduce
-      description: Steps to reproduce the behavior
-      placeholder: |
-        1. Run command '...'
-        2. Process file '...'
-        3. Click on '...'
-        4. See error
-    validations:
-      required: true
-
-  - type: textarea
-    id: expected-behavior
-    attributes:
-      label: ✅ Expected Behavior
-      description: What you expected to happen
-      placeholder: Describe what should have happened
-    validations:
-      required: true
-
-  - type: textarea
-    id: actual-behavior
-    attributes:
-      label: ❌ Actual Behavior
-      description: What actually happened
-      placeholder: Describe what actually happened instead
-    validations:
-      required: true
-
-  - type: textarea
-    id: error-output
-    attributes:
-      label: 📋 Error Output
-      description: Any error messages or relevant log output
-      placeholder: |
-        Paste error messages here (sanitize any sensitive data)
-        ```
-        Error output goes here
-        ```
-    validations:
-      required: false
-
-  - type: textarea
-    id: analysis-context
-    attributes:
-      label: 🔍 Analysis Context
-      description: What type of analysis were you performing?
-      placeholder: |
-        • **Analysis Type**: (e.g., GPS correlation, 2G downgrade detection, cellular parameter extraction)
-        • **File Types**: (e.g., QMDL, PCAP, GPS logs)
-        • **File Sizes**: (approximate sizes for performance context)
-        • **Expected Outcomes**: (what analysis results were you expecting?)
-    validations:
-      required: false
-
-  - type: dropdown
-    id: severity
-    attributes:
-      label: 🚨 Severity Level
-      description: How severe is this bug?
-      options:
-        - "🔴 Critical - Security vulnerability or data loss"
-        - "🟠 High - Major functionality broken"
-        - "🟡 Medium - Feature not working as expected"
-        - "🟢 Low - Minor issue or enhancement"
-    validations:
-      required: true
-
-  - type: checkboxes
-    id: security-checklist
-    attributes:
-      label: 🔒 Security Checklist
-      description: Please confirm security considerations
-      options:
-        - label: I have removed all sensitive data from this report
-          required: true
-        - label: I have not included real QMDL files or cellular captures
-          required: true
-        - label: I have not included personal location or device information
-          required: true
-        - label: This bug report follows responsible disclosure practices
-          required: true
-
-  - type: textarea
-    id: additional-context
-    attributes:
-      label: 📝 Additional Context
-      description: Any other context about the problem
-      placeholder: Add any other context, screenshots (sanitized), or relevant information here
-    validations:
-      required: false
-
-  - type: textarea
-    id: workaround
-    attributes:
-      label: 🔧 Workaround
-      description: Any workaround you've found for this issue
-      placeholder: If you've found a way to work around this bug, please describe it here
-    validations:
-      required: false

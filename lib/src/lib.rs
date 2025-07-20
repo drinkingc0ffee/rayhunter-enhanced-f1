@@ -1,5 +1,4 @@
 pub mod analysis;
-pub mod cellular_info;
 pub mod diag;
 pub mod gsmtap;
 pub mod gsmtap_parser;

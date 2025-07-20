@@ -93,8 +93,7 @@ async fn setup_rootshell(adb_device: &mut ADBUSBDevice) -> Result<()> {
 async fn setup_rayhunter(mut adb_device: ADBUSBDevice) -> Result<ADBUSBDevice> {
     let rayhunter_daemon_bin = include_bytes!(env!("FILE_RAYHUNTER_DAEMON_ORBIC"));
 
-            adb_at_syscmd(&mut adb_device, "mkdir -p /data/rayhunter").await?;
-        adb_at_syscmd(&mut adb_device, "mkdir -p /data/rayhunter/captures").await?;
+    adb_at_syscmd(&mut adb_device, "mkdir -p /data/rayhunter").await?;
     install_file(
         &mut adb_device,
         "/data/rayhunter/rayhunter-daemon",

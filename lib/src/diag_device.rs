@@ -1,6 +1,6 @@
 use crate::diag::{
-    CRC_CCITT, DataType, DiagParsingError, LogConfigRequest, LogConfigResponse, Message,
-    MessagesContainer, Request, RequestContainer, ResponsePayload, build_log_mask_request,
+    build_log_mask_request, DataType, DiagParsingError, LogConfigRequest, LogConfigResponse,
+    Message, MessagesContainer, Request, RequestContainer, ResponsePayload, CRC_CCITT,
 };
 use crate::hdlc::hdlc_encapsulate;
 use crate::log_codes;
@@ -40,7 +40,7 @@ pub enum DiagDeviceError {
     ParseMessagesContainerError(deku::DekuError),
 }
 
-pub const LOG_CODES_FOR_RAW_PACKET_LOGGING: [u32; 39] = [
+pub const LOG_CODES_FOR_RAW_PACKET_LOGGING: [u32; 11] = [
     // Layer 2:
     log_codes::LOG_GPRS_MAC_SIGNALLING_MESSAGE_C, // 0x5226
     // Layer 3:
@@ -56,45 +56,6 @@ pub const LOG_CODES_FOR_RAW_PACKET_LOGGING: [u32; 39] = [
     log_codes::LOG_LTE_NAS_EMM_OTA_OUT_MSG_LOG_C,     // 0xb0ed
     // User IP traffic:
     log_codes::LOG_DATA_PROTOCOL_LOGGING_C, // 0x11eb
-    
-    // Enhanced cellular information capture:
-    // LTE/4G Serving Cell and Neighbor Information
-    log_codes::LOG_LTE_ML1_SERVING_CELL_MEAS_AND_EVAL, // 0xb0e0
-    log_codes::LOG_LTE_ML1_NEIGHBOR_MEASUREMENTS,      // 0xb0e1
-    log_codes::LOG_LTE_ML1_SERVING_CELL_INFO,          // 0xb0e4
-    log_codes::LOG_LTE_ML1_INTRA_FREQ_MEAS,           // 0xb0e5
-    log_codes::LOG_LTE_ML1_INTER_FREQ_MEAS,           // 0xb0e6
-    log_codes::LOG_LTE_ML1_INTER_RAT_MEAS,            // 0xb0e7
-    log_codes::LOG_LTE_ML1_CELL_RESEL_CANDIDATES,     // 0xb0e8
-    log_codes::LOG_LTE_ML1_COMMON_DL_CONFIG,          // 0xb0ea
-    log_codes::LOG_LTE_ML1_SERVING_CELL_COM_LOOP,     // 0xb0eb
-    
-    // LTE System Information
-    log_codes::LOG_LTE_RRC_MEAS_CFG,      // 0xb0c1
-    log_codes::LOG_LTE_RRC_CELL_INFO,     // 0xb0c2
-    log_codes::LOG_LTE_RRC_STATE,         // 0xb0c3
-    log_codes::LOG_LTE_RRC_PLMN_SEARCH_INFO, // 0xb0c4
-    
-    // GSM/2G Cell Information  
-    log_codes::LOG_GSM_L1_BURST_METRICS,  // 0x5134
-    log_codes::LOG_GSM_L1_SCELL_BA_LIST,  // 0x5135
-    log_codes::LOG_GSM_L1_NCELL_ACQ,      // 0x5136
-    log_codes::LOG_GSM_L1_NCELL_BA_LIST,  // 0x5137
-    log_codes::LOG_GSM_CELL_OPTIONS,      // 0x5138
-    log_codes::LOG_GSM_POWER_SCAN,        // 0x5139
-    log_codes::LOG_GSM_L1_CELL_ID,        // 0x513a
-    log_codes::LOG_GSM_RR_CELL_INFORMATION, // 0x513b
-    
-    // WCDMA/3G Cell Information
-    log_codes::LOG_WCDMA_CELL_ID,         // 0x4127
-    log_codes::LOG_WCDMA_RRC_STATES,      // 0x4128
-    log_codes::LOG_WCDMA_PLMN_SEARCH,     // 0x4129
-    log_codes::LOG_WCDMA_SERVING_CELL_INFO, // 0x412a
-    log_codes::LOG_WCDMA_NEIGHBOR_CELL_INFO, // 0x412b
-    
-    // Measurement Reports and Cell Quality
-    log_codes::LOG_LTE_PHY_SERV_CELL_MEASUREMENT, // 0xb0f0
-    log_codes::LOG_LTE_PHY_NEIGH_CELL_MEASUREMENT, // 0xb0f1
 ];
 
 const BUFFER_LEN: usize = 1024 * 1024 * 10;
@@ -142,18 +103,25 @@ impl DiagDevice {
         loop {
             match Self::try_new().await {
                 Ok(device) => {
-                    info!("Diag device initialization succeeded after {num_retries} retries");
+                    info!(
+                        "Diag device initialization succeeded after {} retries",
+                        num_retries
+                    );
                     return Ok(device);
                 }
                 Err(e) => {
                     num_retries += 1;
                     if start_time.elapsed() >= max_duration {
-                        error!("Failed to initialize diag device after {max_duration:?}: {e}");
+                        error!(
+                            "Failed to initialize diag device after {:?}: {}",
+                            max_duration, e
+                        );
                         return Err(e);
                     }
 
                     info!(
-                        "Diag device initialization failed {num_retries} times, retrying in {delay:?}: {e}"
+                        "Diag device initialization failed {} times, retrying in {:?}: {}",
+                        num_retries, delay, e
                     );
                     sleep(delay).await;
 
@@ -272,7 +240,7 @@ impl DiagDevice {
                     }
                     _ => info!("skipping non-LogConfigResponse response..."),
                 },
-                Err(e) => error!("error parsing message: {e:?}"),
+                Err(e) => error!("error parsing message: {:?}", e),
             }
         }
 
@@ -300,7 +268,7 @@ impl DiagDevice {
                         return Ok(());
                     }
                 }
-                Err(e) => error!("error parsing message: {e:?}"),
+                Err(e) => error!("error parsing message: {:?}", e),
             }
         }
 
@@ -314,7 +282,7 @@ impl DiagDevice {
         for (log_type, &log_mask_bitsize) in log_mask_sizes.iter().enumerate() {
             if log_mask_bitsize > 0 {
                 self.set_log_mask(log_type as u32, log_mask_bitsize).await?;
-                info!("enabled logging for log type {log_type}");
+                info!("enabled logging for log type {}", log_type);
             }
         }
 
@@ -378,7 +346,10 @@ fn enable_frame_readwrite(fd: i32, mode: u32) -> DiagResult<()> {
             }
 
             if ret < 0 {
-                let msg = format!("DIAG_IOCTL_SWITCH_LOGGING ioctl failed with error code {ret}");
+                let msg = format!(
+                    "DIAG_IOCTL_SWITCH_LOGGING ioctl failed with error code {}",
+                    ret
+                );
                 return Err(DiagDeviceError::InitializationFailed(msg));
             }
         }

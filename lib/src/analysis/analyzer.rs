@@ -9,7 +9,6 @@ use super::{
     connection_redirect_downgrade::ConnectionRedirect2GDowngradeAnalyzer,
     imsi_requested::ImsiRequestedAnalyzer, information_element::InformationElement,
     null_cipher::NullCipherAnalyzer, priority_2g_downgrade::LteSib6And7DowngradeAnalyzer,
-    cellular_network::CellularNetworkAnalyzer,
 };
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -19,7 +18,6 @@ pub struct AnalyzerConfig {
     pub connection_redirect_2g_downgrade: bool,
     pub lte_sib6_and_7_downgrade: bool,
     pub null_cipher: bool,
-    pub cellular_network: bool,
 }
 
 impl Default for AnalyzerConfig {
@@ -29,7 +27,6 @@ impl Default for AnalyzerConfig {
             connection_redirect_2g_downgrade: true,
             lte_sib6_and_7_downgrade: true,
             null_cipher: true,
-            cellular_network: true,
         }
     }
 }
@@ -86,22 +83,6 @@ pub trait Analyzer {
     fn analyze_information_element(&mut self, ie: &InformationElement) -> Option<Event>;
 }
 
-/// A [QmdlAnalyzer] operates at the QMDL message level, before GSMTAP parsing.
-/// This allows for extraction of cellular network information that may not be
-/// available in the parsed GSMTAP messages, such as detailed cell parameters
-/// and signal measurements.
-pub trait QmdlAnalyzer {
-    /// Returns a user-friendly, concise name for your analyzer.
-    fn get_name(&self) -> Cow<str>;
-
-    /// Returns a user-friendly description of what your analyzer extracts or analyzes.
-    fn get_description(&self) -> Cow<str>;
-
-    /// Analyze a single QMDL message, possibly returning an [Event] if relevant
-    /// information is found or extracted.
-    fn analyze_qmdl_message(&mut self, qmdl_message: &crate::diag::Message) -> Option<Event>;
-}
-
 #[derive(Serialize, Debug)]
 pub struct AnalyzerMetadata {
     pub name: String,
@@ -118,7 +99,6 @@ pub struct ReportMetadata {
 pub struct PacketAnalysis {
     pub timestamp: DateTime<FixedOffset>,
     pub events: Vec<Option<Event>>,
-    pub gps_correlation: Option<super::gps_correlation::GpsCorrelation>,
 }
 
 #[derive(Serialize, Debug)]
@@ -147,7 +127,6 @@ impl AnalysisRow {
 
 pub struct Harness {
     analyzers: Vec<Box<dyn Analyzer + Send>>,
-    qmdl_analyzers: Vec<Box<dyn QmdlAnalyzer + Send>>,
 }
 
 impl Default for Harness {
@@ -160,7 +139,6 @@ impl Harness {
     pub fn new() -> Self {
         Self {
             analyzers: Vec::new(),
-            qmdl_analyzers: Vec::new(),
         }
     }
 
@@ -179,19 +157,12 @@ impl Harness {
         if analyzer_config.null_cipher {
             harness.add_analyzer(Box::new(NullCipherAnalyzer {}));
         }
-        if analyzer_config.cellular_network {
-            harness.add_qmdl_analyzer(Box::new(CellularNetworkAnalyzer::new()));
-        }
 
         harness
     }
 
     pub fn add_analyzer(&mut self, analyzer: Box<dyn Analyzer + Send>) {
         self.analyzers.push(analyzer);
-    }
-
-    pub fn add_qmdl_analyzer(&mut self, analyzer: Box<dyn QmdlAnalyzer + Send>) {
-        self.qmdl_analyzers.push(analyzer);
     }
 
     pub fn analyze_qmdl_messages(&mut self, container: MessagesContainer) -> AnalysisRow {
@@ -204,26 +175,15 @@ impl Harness {
             let qmdl_message = match maybe_qmdl_message {
                 Ok(msg) => msg,
                 Err(err) => {
-                    row.skipped_message_reasons.push(format!("{err:?}"));
+                    row.skipped_message_reasons.push(format!("{:?}", err));
                     continue;
                 }
             };
 
-            // Run QMDL-level analyzers first
-            let qmdl_analysis_result = self.analyze_qmdl_message(&qmdl_message);
-            if qmdl_analysis_result.iter().any(Option::is_some) {
-                row.analysis.push(PacketAnalysis {
-                    timestamp: chrono::Local::now().fixed_offset(),
-                    events: qmdl_analysis_result,
-                    gps_correlation: None, // Will be filled by GPS correlator
-                });
-            }
-
-            // Then run traditional GSMTAP-based analyzers
             let gsmtap_message = match gsmtap_parser::parse(qmdl_message) {
                 Ok(msg) => msg,
                 Err(err) => {
-                    row.skipped_message_reasons.push(format!("{err:?}"));
+                    row.skipped_message_reasons.push(format!("{:?}", err));
                     continue;
                 }
             };
@@ -235,7 +195,7 @@ impl Harness {
             let element = match InformationElement::try_from(&gsmtap_msg) {
                 Ok(element) => element,
                 Err(err) => {
-                    row.skipped_message_reasons.push(format!("{err:?}"));
+                    row.skipped_message_reasons.push(format!("{:?}", err));
                     continue;
                 }
             };
@@ -245,7 +205,6 @@ impl Harness {
                 row.analysis.push(PacketAnalysis {
                     timestamp: timestamp.to_datetime(),
                     events: analysis_result,
-                    gps_correlation: None, // Will be filled by GPS correlator
                 });
             }
         }
@@ -259,37 +218,18 @@ impl Harness {
             .collect()
     }
 
-    fn analyze_qmdl_message(&mut self, msg: &crate::diag::Message) -> Vec<Option<Event>> {
-        self.qmdl_analyzers
-            .iter_mut()
-            .map(|analyzer| analyzer.analyze_qmdl_message(msg))
+    pub fn get_names(&self) -> Vec<Cow<'_, str>> {
+        self.analyzers
+            .iter()
+            .map(|analyzer| analyzer.get_name())
             .collect()
     }
 
-    pub fn get_names(&self) -> Vec<Cow<'_, str>> {
-        let mut names = self.analyzers
-            .iter()
-            .map(|analyzer| analyzer.get_name())
-            .collect::<Vec<_>>();
-        
-        let qmdl_names = self.qmdl_analyzers
-            .iter()
-            .map(|analyzer| analyzer.get_name());
-        names.extend(qmdl_names);
-        names
-    }
-
     pub fn get_descriptions(&self) -> Vec<Cow<'_, str>> {
-        let mut descriptions = self.analyzers
+        self.analyzers
             .iter()
             .map(|analyzer| analyzer.get_description())
-            .collect::<Vec<_>>();
-        
-        let qmdl_descriptions = self.qmdl_analyzers
-            .iter()
-            .map(|analyzer| analyzer.get_description());
-        descriptions.extend(qmdl_descriptions);
-        descriptions
+            .collect()
     }
 
     pub fn get_metadata(&self) -> ReportMetadata {

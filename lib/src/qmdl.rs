@@ -3,7 +3,7 @@
 //! QmdlReader and QmdlWriter can read and write MessagesContainers to and from
 //! QMDL files.
 
-use crate::diag::{DataType, HdlcEncapsulatedMessage, MESSAGE_TERMINATOR, MessagesContainer};
+use crate::diag::{DataType, HdlcEncapsulatedMessage, MessagesContainer, MESSAGE_TERMINATOR};
 
 use futures::TryStream;
 use log::error;

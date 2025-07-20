@@ -4,21 +4,18 @@
 //! standard.
 
 use crate::gsmtap::{GsmtapMessage, GsmtapType, LteNasSubtype, LteRrcSubtype};
-use pycrate_rs::nas::NASMessage;
 use telcom_parser::{decode, lte_rrc};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum InformationElementError {
-    #[error("Failed decoding RRC message")]
-    RRCDecodingError(#[from] telcom_parser::ParsingError),
-    #[error("Failed decoding NAS message")]
-    NASDecodingError(#[from] pycrate_rs::nas::ParseError),
+    #[error("Failed decoding")]
+    DecodingError(#[from] telcom_parser::ParsingError),
     #[error("Unsupported LTE RRC subtype {0:?}")]
     UnsupportedGsmtapType(GsmtapType),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum InformationElement {
     GSM,
     UMTS,
@@ -28,7 +25,7 @@ pub enum InformationElement {
     FiveG,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum LteInformationElement {
     DlCcch(lte_rrc::DL_CCCH_Message),
     // This element of the enum is substantially larger than the others,
@@ -47,7 +44,8 @@ pub enum LteInformationElement {
     SbcchSlBch(lte_rrc::SBCCH_SL_BCH_Message),
     SbcchSlBchV2x(lte_rrc::SBCCH_SL_BCH_Message_V2X_r14),
 
-    NAS(NASMessage),
+    // FIXME: actually parse NAS messages
+    NAS(Vec<u8>),
     // FIXME: unclear which message these "NB" types map to
     //DlCcchNb(),
     //DlDcchNb(),
@@ -86,17 +84,14 @@ impl TryFrom<&GsmtapMessage> for InformationElement {
                     _ => {
                         return Err(InformationElementError::UnsupportedGsmtapType(
                             gsmtap_msg.header.gsmtap_type,
-                        ));
+                        ))
                     }
                 };
                 Ok(InformationElement::LTE(Box::new(lte)))
             }
-            GsmtapType::LteNas(LteNasSubtype::Plain) => {
-                let msg = NASMessage::parse(&gsmtap_msg.payload)?;
-                Ok(InformationElement::LTE(Box::new(
-                    LteInformationElement::NAS(msg),
-                )))
-            }
+            GsmtapType::LteNas(LteNasSubtype::Plain) => Ok(InformationElement::LTE(Box::new(
+                LteInformationElement::NAS(gsmtap_msg.payload.clone()),
+            ))),
             _ => Err(InformationElementError::UnsupportedGsmtapType(
                 gsmtap_msg.header.gsmtap_type,
             )),

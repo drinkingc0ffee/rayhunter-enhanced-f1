@@ -151,14 +151,6 @@ async fn tplink_run_install(
     )
     .await?;
 
-    // Create captures directory for all log files
-    telnet_send_command(
-        addr,
-        &format!("mkdir -p {sdcard_path}/captures"),
-        "exit code 0",
-    )
-    .await?;
-
     telnet_send_file(
         addr,
         &format!("{sdcard_path}/config.toml"),
