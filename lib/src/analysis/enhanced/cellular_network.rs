@@ -10,7 +10,7 @@ use std::collections::HashMap;
 use std::path::Path;
 use serde::{Deserialize, Serialize};
 
-use super::analyzer::{QmdlAnalyzer, Event, EventType};
+use crate::analysis::analyzer::{QmdlAnalyzer, Event, EventType};
 use crate::cellular_info::{
     CellularNetworkInfo, LocationInfo, PlmnInfo, RadioAccessTechnology, SignalInfo,
     NeighborCellInfo, CellularInfoExtractor,

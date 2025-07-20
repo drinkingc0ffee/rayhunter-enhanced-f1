@@ -49,7 +49,7 @@ impl Analyzer for LteSib6And7DowngradeAnalyzer {
     fn analyze_information_element(
         &mut self,
         ie: &InformationElement,
-    ) -> Option<super::analyzer::Event> {
+    ) -> Option<crate::analysis::analyzer::Event> {
         let sibs = &self.unpack_system_information(ie)?.0;
         for sib in sibs {
             match sib {

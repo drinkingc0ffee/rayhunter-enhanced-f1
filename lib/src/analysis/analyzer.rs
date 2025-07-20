@@ -122,7 +122,8 @@ pub struct ReportMetadata {
 pub struct PacketAnalysis {
     pub timestamp: DateTime<FixedOffset>,
     pub events: Vec<Option<Event>>,
-    pub gps_correlation: Option<super::gps_correlation::GpsCorrelation>,
+    #[cfg(feature = "gps_correlation")]
+    pub gps_correlation: Option<super::enhanced::gps_correlation::GpsCorrelation>,
 }
 
 #[derive(Serialize, Debug)]
@@ -183,6 +184,7 @@ impl Harness {
         if analyzer_config.null_cipher {
             harness.add_analyzer(Box::new(NullCipherAnalyzer {}));
         }
+        #[cfg(feature = "enhanced_analysis")]
         if analyzer_config.cellular_network {
             harness.add_qmdl_analyzer(Box::new(CellularNetworkAnalyzer::new()));
         }
@@ -216,11 +218,13 @@ impl Harness {
             // Run QMDL-level analyzers first
             let qmdl_analysis_result = self.analyze_qmdl_message(&qmdl_message);
             if qmdl_analysis_result.iter().any(Option::is_some) {
-                row.analysis.push(PacketAnalysis {
+                let mut packet_analysis = PacketAnalysis {
                     timestamp: chrono::Local::now().fixed_offset(),
                     events: qmdl_analysis_result,
+                    #[cfg(feature = "gps_correlation")]
                     gps_correlation: None, // Will be filled by GPS correlator
-                });
+                };
+                row.analysis.push(packet_analysis);
             }
 
             // Then run traditional GSMTAP-based analyzers
@@ -246,11 +250,13 @@ impl Harness {
 
             let analysis_result = self.analyze_information_element(&element);
             if analysis_result.iter().any(Option::is_some) {
-                row.analysis.push(PacketAnalysis {
+                let mut packet_analysis = PacketAnalysis {
                     timestamp: timestamp.to_datetime(),
                     events: analysis_result,
+                    #[cfg(feature = "gps_correlation")]
                     gps_correlation: None, // Will be filled by GPS correlator
-                });
+                };
+                row.analysis.push(packet_analysis);
             }
         }
         row

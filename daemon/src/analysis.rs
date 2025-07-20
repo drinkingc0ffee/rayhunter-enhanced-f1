@@ -21,7 +21,7 @@ use tokio_util::task::TaskTracker;
 use crate::dummy_analyzer::TestAnalyzer;
 use crate::qmdl_store::RecordingStore;
 use crate::server::ServerState;
-use crate::gps_correlation::GpsCorrelator;
+use crate::enhanced::gps_correlation::GpsCorrelator;
 
 pub struct AnalysisWriter {
     writer: BufWriter<File>,

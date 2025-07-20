@@ -21,7 +21,7 @@ use tokio_util::io::ReaderStream;
 
 use crate::analysis::{AnalysisCtrlMessage, AnalysisStatus};
 use crate::config::Config;
-use crate::gps::GpsCoordinate;
+use crate::enhanced::gps::GpsCoordinate;
 use crate::pcap::generate_pcap_data;
 use crate::qmdl_store::RecordingStore;
 use crate::{DiagDeviceCtrlMessage, display};

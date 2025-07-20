@@ -20,7 +20,7 @@ use tokio_util::task::TaskTracker;
 
 use crate::analysis::{AnalysisCtrlMessage, AnalysisWriter};
 use crate::display;
-use crate::gps::{GpsCoordinate, GpsWriter};
+use crate::enhanced::gps::{GpsCoordinate, GpsWriter};
 use crate::qmdl_store::{RecordingStore, RecordingStoreError};
 use crate::server::ServerState;
 

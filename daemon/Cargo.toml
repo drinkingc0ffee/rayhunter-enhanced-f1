@@ -23,11 +23,7 @@ default = ["orbic"]
 
 [[bin]]
 name = "rayhunter-daemon"
-path = "src/daemon.rs"
-
-[[bin]]
-name = "rayhunter-check"
-path = "src/check.rs"
+path = "src/main.rs"
 
 [dependencies]
 rayhunter = { path = "../lib" }
