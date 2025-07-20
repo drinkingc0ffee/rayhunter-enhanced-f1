@@ -19,6 +19,12 @@
 *.exe
 *.pdb
 
+# Compiled binaries (no extension)
+rayhunter-daemon
+rayhunter-daemon-*
+rootshell
+rootshell-*
+
 # Cargo registry and cache
 .cargo/
 **/.cargo/
@@ -209,6 +215,16 @@ docker-build/rayhunter-daemon-enhanced-arm-fixed
 docker-build/rootshell-arm
 docker-build/rootshell-arm-enhanced
 docker-build/web-enhanced/
+
+# =============================================================================
+# AUTO-GENERATED FILES
+# =============================================================================
+
+# Auto-generated Rust files
+telcom-parser/src/lte_rrc.rs
+**/generated/
+**/*_generated.rs
+**/*_generated.rs
 ENV/
 env.bak/
 venv.bak/
