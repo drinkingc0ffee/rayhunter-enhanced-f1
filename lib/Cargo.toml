@@ -11,9 +11,20 @@ path = "src/lib.rs"
 
 [features]
 default = []
+
+# Original device features
 orbic = []
 tplink = []
 wingtech = []
+
+# Enhanced analysis features
+enhanced_analysis = ["gps_support"]
+gps_support = []
+gps_correlation = ["gps_support"]
+web_interface = []
+
+# Convenience feature combinations  
+enhanced_full = ["enhanced_analysis", "gps_correlation", "web_interface"]
 
 [dependencies]
 bytes = "1.5.0"

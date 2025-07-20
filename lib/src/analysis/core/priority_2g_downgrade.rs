@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
-use super::analyzer::{Analyzer, Event, EventType, Severity};
-use super::information_element::{InformationElement, LteInformationElement};
+use super::super::analyzer::{Analyzer, Event, EventType, Severity};
+use super::super::information_element::{InformationElement, LteInformationElement};
 use telcom_parser::lte_rrc::{
     BCCH_DL_SCH_MessageType, BCCH_DL_SCH_MessageType_c1, CellReselectionPriority,
     SystemInformation_r8_IEsSib_TypeAndInfo, SystemInformation_r8_IEsSib_TypeAndInfo_Entry,

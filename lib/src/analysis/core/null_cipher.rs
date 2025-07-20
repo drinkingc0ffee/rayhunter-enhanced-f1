@@ -8,8 +8,8 @@ use telcom_parser::lte_rrc::{
     SecurityModeCommandCriticalExtensions, SecurityModeCommandCriticalExtensions_c1,
 };
 
-use super::analyzer::{Analyzer, Event, EventType, Severity};
-use super::information_element::{InformationElement, LteInformationElement};
+use super::super::analyzer::{Analyzer, Event, EventType, Severity};
+use super::super::information_element::{InformationElement, LteInformationElement};
 
 pub struct NullCipherAnalyzer {}
 

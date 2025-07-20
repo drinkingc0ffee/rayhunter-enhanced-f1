@@ -4,11 +4,21 @@ version = "0.4.1"
 edition = "2024"
 
 [features]
-# These feature flags are mutually exclusive, and exactly one must be enabled.
+# Device feature flags (mutually exclusive, exactly one must be enabled)
 orbic = ["rayhunter/orbic"]
 tplink = ["rayhunter/tplink"]
 wingtech = ["rayhunter/wingtech"]
 
+# Enhanced analysis features (optional, can be combined)
+enhanced_analysis = ["rayhunter/enhanced_analysis"]
+gps_support = ["rayhunter/gps_support"]
+gps_correlation = ["rayhunter/gps_correlation"]
+web_interface = ["rayhunter/web_interface"]
+
+# Convenience combinations
+enhanced_full = ["enhanced_analysis", "gps_correlation", "web_interface"]
+
+# Default includes orbic device support
 default = ["orbic"]
 
 [[bin]]

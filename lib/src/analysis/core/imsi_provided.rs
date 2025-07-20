@@ -2,8 +2,8 @@ use std::borrow::Cow;
 
 use telcom_parser::lte_rrc::{PCCH_MessageType, PCCH_MessageType_c1, PagingUE_Identity};
 
-use super::analyzer::{Analyzer, Event, EventType, Severity};
-use super::information_element::{InformationElement, LteInformationElement};
+use super::super::analyzer::{Analyzer, Event, EventType, Severity};
+use super::super::information_element::{InformationElement, LteInformationElement};
 
 pub struct ImsiProvidedAnalyzer {}
 

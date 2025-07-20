@@ -3,15 +3,16 @@ mod config;
 mod diag;
 mod display;
 mod dummy_analyzer;
-mod enhanced_analysis;
 mod error;
-mod gps;
-mod gps_correlation;
 mod key_input;
 mod pcap;
 mod qmdl_store;
 mod server;
 mod stats;
+
+// Enhanced features - conditionally compiled
+#[cfg(any(feature = "enhanced_analysis", feature = "gps_support", feature = "gps_correlation"))]
+mod enhanced;
 
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -48,11 +49,10 @@ use tokio_util::task::TaskTracker;
 type AppRouter = Router<Arc<ServerState>>;
 
 fn get_router() -> AppRouter {
-    Router::new()
+    let mut router = Router::new()
         .route("/api/pcap/{name}", get(get_pcap))
         .route("/api/qmdl/{name}", get(get_qmdl))
         .route("/api/zip/{name}", get(get_zip))
-        .route("/api/gps/{name}", get(gps::get_gps_for_recording).head(gps::head_gps_for_recording))
         .route("/api/system-stats", get(get_system_stats))
         .route("/api/qmdl-manifest", get(get_qmdl_manifest))
         .route("/api/start-recording", post(start_recording))
@@ -64,10 +64,19 @@ fn get_router() -> AppRouter {
         .route("/api/analysis/{name}", post(start_analysis))
         .route("/api/config", get(get_config))
         .route("/api/config", post(set_config))
-        .route("/api/v1/gps/{lat_lon}", post(gps::receive_gps_coordinate))
-        .route("/api/v1/gps/{lat_lon}", get(gps::receive_gps_coordinate))
         .route("/", get(|| async { Redirect::permanent("/index.html") }))
-        .route("/{*path}", get(serve_static))
+        .route("/{*path}", get(serve_static));
+
+    // GPS API routes - only available with GPS features enabled
+    #[cfg(any(feature = "gps_support", feature = "gps_correlation"))]
+    {
+        router = router
+            .route("/api/gps/{name}", get(enhanced::gps::get_gps_for_recording).head(enhanced::gps::head_gps_for_recording))
+            .route("/api/v1/gps/{lat_lon}", post(enhanced::gps::receive_gps_coordinate))
+            .route("/api/v1/gps/{lat_lon}", get(enhanced::gps::receive_gps_coordinate));
+    }
+
+    router
 }
 
 // Runs the axum server, taking all the elements needed to build up our
@@ -217,7 +226,18 @@ async fn run_with_config(
     let (diag_tx, diag_rx) = mpsc::channel::<DiagDeviceCtrlMessage>(1);
     let (ui_update_tx, ui_update_rx) = mpsc::channel::<display::DisplayState>(1);
     let (analysis_tx, analysis_rx) = mpsc::channel::<AnalysisCtrlMessage>(5);
-    let (gps_tx, gps_rx) = mpsc::channel::<crate::gps::GpsCoordinate>(100);
+    
+    // GPS channel - only created when GPS features are enabled
+    #[cfg(any(feature = "gps_support", feature = "gps_correlation"))]
+    let (gps_tx, gps_rx) = mpsc::channel::<crate::enhanced::gps::GpsCoordinate>(100);
+    
+    #[cfg(not(any(feature = "gps_support", feature = "gps_correlation")))]
+    let (gps_tx, gps_rx) = {
+        // Create dummy channels for non-GPS builds
+        use tokio::sync::mpsc;
+        mpsc::channel::<()>(1)
+    };
+    
     let mut maybe_ui_shutdown_tx = None;
     let mut maybe_key_input_shutdown_tx = None;
     if !config.debug_mode {

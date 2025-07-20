@@ -6,11 +6,15 @@ use crate::util::RuntimeMetadata;
 use crate::{diag::MessagesContainer, gsmtap_parser};
 
 use super::{
-    connection_redirect_downgrade::ConnectionRedirect2GDowngradeAnalyzer,
-    imsi_requested::ImsiRequestedAnalyzer, information_element::InformationElement,
-    null_cipher::NullCipherAnalyzer, priority_2g_downgrade::LteSib6And7DowngradeAnalyzer,
-    cellular_network::CellularNetworkAnalyzer,
+    core::connection_redirect_downgrade::ConnectionRedirect2GDowngradeAnalyzer,
+    core::imsi_requested::ImsiRequestedAnalyzer, 
+    information_element::InformationElement,
+    core::null_cipher::NullCipherAnalyzer, 
+    core::priority_2g_downgrade::LteSib6And7DowngradeAnalyzer,
 };
+
+#[cfg(feature = "enhanced_analysis")]
+use super::enhanced::cellular_network::CellularNetworkAnalyzer;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(default)]

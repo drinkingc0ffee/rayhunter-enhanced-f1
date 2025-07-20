@@ -4,8 +4,8 @@ use pycrate_rs::nas::NASMessage;
 use pycrate_rs::nas::emm::EMMMessage;
 use pycrate_rs::nas::generated::emm::emm_identity_request::IDTypeV;
 
-use super::analyzer::{Analyzer, Event, EventType, Severity};
-use super::information_element::{InformationElement, LteInformationElement};
+use super::super::analyzer::{Analyzer, Event, EventType, Severity};
+use super::super::information_element::{InformationElement, LteInformationElement};
 
 const PACKET_THRESHHOLD: usize = 150;
 
