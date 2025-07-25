@@ -1,11 +1,25 @@
 #!/bin/bash -e
-cd bin/web
-    npm run build
-cd ..
-docker build -t rayhunter-devenv -f tools/devenv.dockerfile .
-echo ' build!'
-docker run --user $UID:$GID -v ./:/workdir -w /workdir -it rayhunter-devenv sh -c 'cargo build --release --target="armv7-unknown-linux-musleabihf"'
-adb shell '/bin/rootshell -c "/etc/init.d/rayhunter_daemon stop"'
-adb push target/armv7-unknown-linux-musleabihf/release/rayhunter-daemon /data/rayhunter/rayhunter-daemon
-echo "rebooting the device..."
-adb shell '/bin/rootshell -c "reboot"'
+
+echo "🐳 Building test_qr for ARM using Docker..."
+
+# Build the Docker environment
+docker build -t rayhunter-devenv -f devenv.dockerfile .
+
+echo "✅ Docker image built successfully!"
+
+# Build the test_qr binary for ARM
+echo "🔨 Building test_qr binary for ARM..."
+docker run --user $UID:$GID -v ./:/workdir -w /workdir -it rayhunter-devenv sh -c 'cd daemon && cargo build --release --bin test_qr --features orbic --target="armv7-unknown-linux-gnueabihf"'
+
+echo "✅ test_qr binary built successfully!"
+
+# Push the binary to the device
+echo "📱 Pushing test_qr to device..."
+adb push daemon/target/armv7-unknown-linux-gnueabihf/release/test_qr /tmp/
+
+# Make it executable
+echo "🔧 Making test_qr executable..."
+adb shell "chmod +x /tmp/test_qr"
+
+echo "🎉 test_qr is ready! Run it with:"
+echo "adb shell \"/bin/rootshell /tmp/test_qr\""

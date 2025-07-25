@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# Tool to cross-compile outside of Linux.
+#
+# On MacOS, OrbStack is recommended, but other docker distributions will work
+# too.
+#
+# Usage:
+# ./run-docker-devenv
+#
+# Inside the shell:
+# cd daemon && cargo build --bin test_qr --features orbic --target armv7-unknown-linux-gnueabihf --release
+#
+# Your output binary is in ./daemon/target/armv7-unknown-linux-gnueabihf/release/test_qr
+
+docker build -t rayhunter-devenv -f devenv.dockerfile .
+exec docker run --user $UID:$GID -v ./:/workdir -w /workdir -it rayhunter-devenv "$@"

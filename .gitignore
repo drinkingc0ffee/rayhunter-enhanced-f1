@@ -1,3 +1,5 @@
 /target
 /book
 .DS_Store
+target/
+daemon/target/
