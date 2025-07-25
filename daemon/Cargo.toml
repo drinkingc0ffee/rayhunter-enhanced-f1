@@ -25,6 +25,10 @@ path = "src/check.rs"
 name = "test_qr"
 path = "src/bin/test_qr.rs"
 
+[[bin]]
+name = "test_input"
+path = "src/bin/test_input.rs"
+
 [dependencies]
 rayhunter = { path = "../lib" }
 toml = "0.8.8"
